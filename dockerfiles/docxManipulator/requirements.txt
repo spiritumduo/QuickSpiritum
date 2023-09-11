@@ -1,0 +1,7 @@
+docx2txt==0.8
+docxedit==1.0.1
+lxml==4.9.3
+pexpect==4.8.0
+ptyprocess==0.7.0
+python-docx==0.8.11
+python-docx-replace==0.4.4

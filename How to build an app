@@ -1,0 +1,8 @@
+# How to Build an App
+
+1. Create a new respository on GitHub
+2. Clone above respository onto VS Code
+3. Build a Docker-compose.yaml file to start up environment
+4. May need separate Dockerfiles to build containere environments
+5. Log into container with
+>> docker exec -it requests bash

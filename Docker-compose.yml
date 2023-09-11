@@ -1,0 +1,71 @@
+version: "3.9"
+
+services:
+  requests:
+    build: ./dockerfiles/docxManipulator
+    container_name: requests
+    #restart: unless-stopped
+    #env_file: .env
+#    ports:
+#      - "1080:80"
+    volumes:
+      - ./requests:/requests
+#      - ./dockerfiles_users:/dockerfiles_users
+#      - ./ipc:/ipc
+      - ./logs:/logs
+    working_dir: /requests
+#    networks:
+#      - app-network
+    command: sh -c "while true; do sleep 1; done"
+
+#      sh -c "uvicorn httapp:app --reload --host 0.0.0.0 --port 80"
+    # TODO: Need to find a graceful way to close down univorn. Perhaps with Gunvicon running
+
+#  launcher:
+#    build: ./dockerfiles_main/launcher
+#    container_name: launcher
+#    volumes:
+#    # Can run sibling containers with the below socket
+#      - /var/run/docker.sock:/var/run/docker.sock
+#      - ./dockerfiles_users:/dockerfiles_users
+#      - ./dockerfiles_main/libretranslate:/libretranslate
+#      - ./ipc:/ipc
+#      - ./launcher:/launcher
+#      - ./logs:/logs
+#    working_dir: /launcher
+#    networks:
+#      - app-network
+#      - envNetwork
+#    # Need a prolonged grace stop period (normally 10 seconds) as otherwise the sibling containers to get closed in time
+#    stop_grace_period: 1m
+#    depends_on:
+#      - portal
+#    # use of entrypoint rather than command to make below function PID1, and can then handle SIGTERM appropriately (Linux treats PID1 a little different to other processes (harder to kill))
+#    entrypoint: sh -c "python launcher.py"
+
+
+#  webserver:
+#    depends_on:
+#      - portal
+#    image: nginx:1.15.12-alpine
+#    container_name: webserver
+#    restart: unless-stopped
+#    ports:
+#      - "80:80"
+#      - "443:443"
+#    volumes:
+#      - ./nginx-conf:/etc/nginx/conf.d
+#    networks:
+#      - app-network
+#      - nginx-network
+#      - envNetwork
+
+
+#networks:
+#  app-network:
+#    driver: bridge
+#  nginx-network:
+#    external: true
+#  envNetwork:
+#    name: envNetwork
+
