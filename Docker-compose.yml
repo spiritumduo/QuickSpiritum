@@ -21,6 +21,23 @@ services:
 #      sh -c "uvicorn httapp:app --reload --host 0.0.0.0 --port 80"
     # TODO: Need to find a graceful way to close down univorn. Perhaps with Gunvicon running
 
+  webserver:
+    build: ./dockerfiles/app
+    container_name: webserver
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "1111:1111"
+    volumes:
+      - ./app:/app
+      - ./requests:/requests
+      - ./logs:/logs
+    working_dir: /app
+
+    command: sh -c "while true; do sleep 1; done"
+
+
 #  launcher:
 #    build: ./dockerfiles_main/launcher
 #    container_name: launcher
@@ -44,21 +61,7 @@ services:
 #    entrypoint: sh -c "python launcher.py"
 
 
-#  webserver:
-#    depends_on:
-#      - portal
-#    image: nginx:1.15.12-alpine
-#    container_name: webserver
-#    restart: unless-stopped
-#    ports:
-#      - "80:80"
-#      - "443:443"
-#    volumes:
-#      - ./nginx-conf:/etc/nginx/conf.d
-#    networks:
-#      - app-network
-#      - nginx-network
-#      - envNetwork
+
 
 
 #networks:
