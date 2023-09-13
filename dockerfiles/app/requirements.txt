@@ -1,6 +1,7 @@
 docx2txt
 docx2pdf
 docxedit
+flask
 mypy
 mypy-extensions
 pexpect

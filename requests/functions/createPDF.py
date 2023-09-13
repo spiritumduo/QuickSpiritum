@@ -10,11 +10,11 @@ import re
 import docx2txt
 from docx2pdf import convert
 from pathlib import Path
-import subprocess
 
 
 import constants as C
 
+#TODO: try and move these to the contants module
 TEMPLATE_DIR = os.getenv('TEMPLATE_DIR')
 PDF_DIR = os.environ.get('PDF_DIR')
 
