@@ -5,7 +5,7 @@ __pycache__/
 
 # Extra
 logs/
-requests/archieve
+requests/archive/
 
 # C extensions
 *.so

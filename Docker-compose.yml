@@ -35,9 +35,8 @@ services:
       - ./logs:/logs
     working_dir: /app
     env_file: .env
-    stop_signal: SIGINT
-    #stop_grace_period: 30s
-    entrypoint: python3 /app/PID_1.py
+    entrypoint: bash PID_1.sh
+    #TODO: need to run as non-root at some point
 
 
 #  launcher:

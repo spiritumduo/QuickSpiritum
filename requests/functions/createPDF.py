@@ -10,17 +10,14 @@ import re
 import docx2txt
 from docx2pdf import convert
 from pathlib import Path
+import subprocess
+
 
 import constants as C
 
 TEMPLATE_DIR = os.getenv('TEMPLATE_DIR')
 PDF_DIR = os.environ.get('PDF_DIR')
-"""templateDir: str = '/requests/templates/'
-PDFDir: str = '/requests/archive/'"""
 
-"""checked: str = u'\u2612'
-unchecked: str = u'\u2610'
-print(type(checked))"""
 
 
 class docxManipulator():
@@ -32,9 +29,9 @@ class docxManipulator():
 
     def getLocations(self) -> list[str] | None:
         locations: list[str] = []
-        # need self.templateDir here
+
         # list of all content in a directory, filtered so only directories are returned
-        locations = [directory for directory in os.listdir(templateDir) if os.path.isdir(templateDir+directory)]
+        locations = [directory for directory in os.listdir(self.templateDir) if os.path.isdir(self.templateDir+directory)]
         return locations
     
 
@@ -48,8 +45,12 @@ class docxManipulator():
             raise Exception(f'"{typesPath}" is not a valid directory!')
             return None
 
-        print(typesPath)
-        types = [f for f in os.listdir(typesPath) if os.path.isfile(f'{typesPath}{f}') and f.endswith(".docx")]
+
+        types = [f for f in os.listdir(typesPath) 
+                 if os.path.isfile(f'{typesPath}{f}') 
+                 and f.endswith(".docx") 
+                 and not f.startswith('~')]
+
         return types
     
 
@@ -98,7 +99,8 @@ class docxManipulator():
         
 
         tempDocxPath =f'{ tempDocxPath }{ n }.docx'
-        PDFPath: str = f'{ self.outputPath }{ location }/{ type }_{ demographics }_{ n }.pdf'
+        PDFDir: str = f'{ self.outputPath }{ location }'
+        PDFPath = f'{ self.outputPath }{ location }/{ type }_{ demographics }_{ n }.pdf'
 
         try:
             doc = Document(templatePath)
@@ -112,11 +114,19 @@ class docxManipulator():
             raise Exception(f'"{tempDocxPath}" is not a valid filename!')
             return False
 
-        #TODO: #3 might need to use the unoserver if using this a lot, see https://github.com/unoconv/unoserver/
-        pexpect.run(f'unoconvert "{ tempDocxPath }" "{ PDFPath }"')
-        print(f'unoconvert "{ tempDocxPath }" "{ PDFPath }"')
-        print()
-        #os.remove(tempDocxPath)
+        libreofficeOutput = pexpect.spawn(f'libreoffice --headless --convert-to pdf "{ tempDocxPath }" --outdir "{ PDFDir }"')
+        
+        if libreofficeOutput.read()[0:7] != b'convert':
+            raise Exception(f'Error with PDF creation via LibreOffice')
+            return False
+
+
+        #pexpect.run(f'libreoffice --headless --convert-to pdf "{ tempDocxPath }" --outdir "{ PDFDir }"')
+        #list_files = subprocess.run(['libreoffice' , '--headless', '--convert-to', 'pdf' ,'/requests/archive/Salisbury/temp/Lung function test_Smith, John, 1234567_1.docx', '--outdir', '/requests/archive/Salisbury'])
+        #print("The exit code was: %d" % list_files.returncode)
+        #print(f'unoconvert "{ tempDocxPath }" "{ PDFPath }"')
+
+        os.remove(tempDocxPath)
         return True
 
         
@@ -139,8 +149,8 @@ if __name__ == '__main__':
     variables['First name'] = 'John'
     variables['Last name'] = 'Smith'
     variables['Hospital ID-integer'] = '123456'
-    variables['Contraindications-radio-Yes'] = unchecked
-    variables['Contraindications-radio-No'] =checked
+    variables['Contraindications-radio-Yes'] = C.UNCHECKED
+    variables['Contraindications-radio-No'] = C.CHECKED
 
     """print('Placeholders for Lung function tests at Salisbury are:')
     for v in variables:
