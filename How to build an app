@@ -6,3 +6,6 @@
 4. May need separate Dockerfiles to build containere environments
 5. Log into container with
 >> docker exec -it requests bash
+6. pip freeze to get requirements and copy into requirements.txt file
+>> pip freeze
+7. mypy to check for typing

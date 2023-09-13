@@ -1,1 +1,10 @@
-flask
+docx2txt
+docx2pdf
+docxedit
+mypy
+mypy-extensions
+pexpect
+python-docx
+python-docx-replace
+unoserver
+pause

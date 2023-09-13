@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:22.04
 WORKDIR /
 COPY requirements.txt /
 RUN apt-get update
