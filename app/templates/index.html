@@ -24,9 +24,24 @@
     </select>
   </div>
 
-  {% for key, value in variables.items() %}
-    <p>{{key}}</p>
-  {% endfor %}
+  <table>
+    <thead>
+      <th>Placeholder full name</th>
+      <th>Variable 1</th>
+      <th>Variable 2</th>
+    </thead>
+    <body>
+        {% for key in variables %}
+        <tr>
+          <td>{{key[2]}}</td>
+          <td>{{key[3]}}</td>
+          <td>{{key[4]}}</td>
+        </tr>
+        {% endfor %}
+      </tr>
+    </tbody>
+  </table>
+
 
   <label class="nhsuk-label" for="select-1">
     {{ trans['Use the link below to start up a new command line'] }}

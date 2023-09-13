@@ -53,21 +53,29 @@ class docxManipulator():
 
         return types
     
-
-    def getVariables(self, location: str, type: str) -> dict[str,str]:
-        variables: dict[str,str] = {}
+    #TODO: will need return hint type
+    def getVariables(self, location: str, type: str):
+        #TODO: will need to have hint type
+        variables= []
+        subList = []
         
         doc = docx2txt.process(f'{ self.templateDir }{ location }/{ type }.docx')
         doc_Regex = re.compile(r'\$\{.*?\}')
         formVariables = doc_Regex.findall(doc)
 
         for key in formVariables:
-            cleanedKey=re.sub("[${}]","",key)
-            variables[cleanedKey] = ''
-            #if '-' in cleanedKey:
-                #print(cleanedKey)
-                #splitKey = cleanedKey.split('-')
-                #print(splitKey[0])
+            cleanedKey=re.sub("[${}]", "", key)
+            subList.append(cleanedKey)
+            subList.append('')
+
+            splitKey = cleanedKey.split('|')
+            for s in splitKey:
+                subList.append(s)
+            
+            variables.append(list(subList))
+            subList.clear()
+
+        print(variables)
         return variables
     
 
@@ -146,14 +154,14 @@ if __name__ == '__main__':
     variables = docxPtr.getVariables('Salisbury', 'Lung function test')
 
     #print(variables)
-    variables['First name'] = 'John'
+    """variables['First name'] = 'John'
     variables['Last name'] = 'Smith'
     variables['Hospital ID-integer'] = '123456'
     variables['Contraindications-radio-Yes'] = C.UNCHECKED
-    variables['Contraindications-radio-No'] = C.CHECKED
+    variables['Contraindications-radio-No'] = C.CHECKED"""
 
     """print('Placeholders for Lung function tests at Salisbury are:')
     for v in variables:
         print(v)"""
     
-    tempDocxPath = docxPtr.createPDF('Salisbury', 'Lung function test', variables, "Smith, John, 1234567")
+"""    tempDocxPath = docxPtr.createPDF('Salisbury', 'Lung function test', variables, "Smith, John, 1234567")"""
