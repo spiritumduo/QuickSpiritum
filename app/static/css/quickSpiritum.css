@@ -1,0 +1,72 @@
+.formWrapper {
+  margin: 0px;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+}
+
+.columnL {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 100%;
+  flex: 1;
+  text-align: right;
+  padding-right: 5px;
+  padding-bottom: 10px;
+}
+
+.columnR {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 100%;
+  flex: 2;
+  padding-bottom: 5px;
+}
+
+
+
+p {
+  font-size: 20px;
+}
+
+label {
+  font-size: 20px;
+}
+
+.inputLarge {
+  zoom: 1.5;
+  max-width: 300px;
+}
+
+
+
+.radioTitle {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.my-class {
+  /* Mobile - Desktop */
+  padding: 10px;
+}
+
+.locationSelect-div-padding {
+  text-align: right;
+  padding: 10px;
+}
+
+.locationSelect {
+  zoom: 1.5;
+  min-width: 100px;
+  max-width: 300px;
+}
+
+@media only screen and (min-width: 600px) {
+/* Tablet - Desktop */
+/* It will overwrite the other less specific classes padding */
+.locationSelect-div-padding {
+  padding: 20px;
+}
+}

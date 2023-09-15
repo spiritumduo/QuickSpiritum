@@ -20,7 +20,7 @@ PDF_DIR = os.environ.get('PDF_DIR')
 
 
 
-class docxManipulator():
+class createPDF():
     def __init__(self, templateDir: str, outputPath: str) -> None:
         self.templateDir: str = templateDir
         self.outputPath: str = outputPath
@@ -54,7 +54,7 @@ class docxManipulator():
         return types
     
     #TODO: will need return hint type
-    def getVariables(self, location: str, type: str):
+    def getPlaceholders(self, location: str, type: str):
         #TODO: will need to have hint type
         variables= []
         subList = []
@@ -74,12 +74,11 @@ class docxManipulator():
             
             variables.append(list(subList))
             subList.clear()
-
-        print(variables)
+            
         return variables
     
 
-    def createPDF(self, location: str, type: str, variables: dict[str,str], demographics: str) -> str | None:
+    def create(self, location: str, type: str, variables: dict[str,str], demographics: str) -> str | None:
         templatePath: str = f'{ self.templateDir }{ location }/{ type }.docx'
         tempDocxDir: str = f'{ self.outputPath }{ location }/temp/'
         tempDocxPath: str = f'{ tempDocxDir }{ type }_{ demographics }_'
@@ -143,7 +142,7 @@ class docxManipulator():
 if __name__ == '__main__':
     print("Running...")
     
-    docxPtr = docxManipulator(TEMPLATE_DIR, PDF_DIR)
+    docxPtr = createPDF(TEMPLATE_DIR, PDF_DIR)
     # Get the different locations
     print(f'Locations: { docxPtr.getLocations() }')
     
@@ -151,7 +150,7 @@ if __name__ == '__main__':
     print(f'Available requests in Salisbury: { docxPtr.getTypes("Salisbury") }')
     
     # Get variables from
-    variables = docxPtr.getVariables('Salisbury', 'Lung function test')
+    variables = docxPtr.getPlaceholders('Salisbury', 'Lung function test')
 
     #print(variables)
     """variables['First name'] = 'John'
@@ -164,4 +163,4 @@ if __name__ == '__main__':
     for v in variables:
         print(v)"""
     
-"""    tempDocxPath = docxPtr.createPDF('Salisbury', 'Lung function test', variables, "Smith, John, 1234567")"""
+"""    tempDocxPath = docxPtr.create('Salisbury', 'Lung function test', variables, "Smith, John, 1234567")"""
