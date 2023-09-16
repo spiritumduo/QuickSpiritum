@@ -33,7 +33,7 @@ class formElements():
 
             elif p2 == 'signature':
                 formHTML += self.wrapHTML(f'<label for="{ PFull }">Signature</label>', \
-                                f'<input type="text" class="inputLarge" name="{ PFull }" value="{ PFull }">')
+                                f'<input type="text" class="inputLarge" name="{ PFull }" value="">')
                 
             elif p2 == 'configuration':
                 None
@@ -52,7 +52,7 @@ class formElements():
             else:
                 if len(placeholder) == 3:
                     formHTML += self.wrapHTML(f'<label for="{ PFull }">{ P2 }</label>', \
-                                f'<input type="text" class="inputLarge" name="{ PFull }" value="{ PFull }">')
+                                f'<input type="text" class="inputLarge" name="{ PFull }" value="">')
                 if len(placeholder) >= 4:
                     p3 = placeholder[3].lower().strip()
 
@@ -85,7 +85,7 @@ class formElements():
                         <label for="{ PFull }">{ P4 }</label>
                     </div>""")
                         
-                    elif p3 == 'tickbox':
+                    elif p3 == 'checkbox':
                         formHTML += self.wrapHTML('', f"""<div>
                     <input type="checkbox" class="inputLarge" name="{ PFull }" value="">
                 <label for="{ PFull }">{ P2 }</label></div>""")
@@ -98,7 +98,7 @@ class formElements():
     
     def wrapHTML(self, LItem: str ='', RItem: str = '') -> str:
         wrappedHTML: str = f"""        <div class='row'>
-            <div class='columnL input'>
+            <div class='columnL'>
                 { LItem }
             </div>
             <div class='columnR'>

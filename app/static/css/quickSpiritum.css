@@ -1,3 +1,9 @@
+.title-div{
+  font-size: 30px;
+  font-weight: bold;
+  padding: 0px
+}
+
 .formWrapper {
   margin: 0px;
 }
@@ -22,13 +28,31 @@
   flex-direction: column;
   flex-basis: 100%;
   flex: 2;
-  padding-bottom: 5px;
+  padding-bottom: 10px;
 }
 
+.barColumnL {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 100%;
+  flex: 1;
+  text-align: right;
+  padding-right: 5px;
+  padding-bottom: 0px;
+}
 
+.barColumnR {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 100%;
+  flex: 2;
+  padding-bottom: 0px;
+}
 
-p {
+.requestsSelected{
   font-size: 20px;
+  text-align: center;
+  padding-bottom: 10px;
 }
 
 label {
@@ -40,7 +64,9 @@ label {
   max-width: 300px;
 }
 
-
+.high {
+  min-height: 50px;
+}
 
 .radioTitle {
   font-size: 20px;
@@ -57,16 +83,24 @@ label {
   padding: 10px;
 }
 
+.subtitleBar {
+
+}
+
 .locationSelect {
   zoom: 1.5;
   min-width: 100px;
   max-width: 300px;
 }
 
+/* These are enforced when screen is larger */
 @media only screen and (min-width: 600px) {
-/* Tablet - Desktop */
-/* It will overwrite the other less specific classes padding */
-.locationSelect-div-padding {
-  padding: 20px;
-}
+  /* Tablet - Desktop */
+  /* It will overwrite the other less specific classes padding */
+  .locationSelect-div-padding {
+    padding: 20px;
+  }
+  .title-div {
+    font-size: 48px;
+  }
 }

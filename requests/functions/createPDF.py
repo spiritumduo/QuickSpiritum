@@ -50,30 +50,61 @@ class createPDF():
                  if os.path.isfile(f'{typesPath}{f}') 
                  and f.endswith(".docx") 
                  and not f.startswith('~')]
+        
+        types = [x.removesuffix('.docx') for x in types]
 
         return types
     
     #TODO: will need return hint type
-    def getPlaceholders(self, location: str, type: str):
-        #TODO: will need to have hint type
-        variables= []
-        subList = []
-        
-        doc = docx2txt.process(f'{ self.templateDir }{ location }/{ type }.docx')
-        doc_Regex = re.compile(r'\$\{.*?\}')
-        formVariables = doc_Regex.findall(doc)
-
-        for key in formVariables:
-            cleanedKey=re.sub("[${}]", "", key)
-            subList.append(cleanedKey)
-            subList.append('')
-
-            splitKey = cleanedKey.split('|')
-            for s in splitKey:
-                subList.append(s)
+    def getPlaceholders(self, location: str, requests: list[str]):
+        """ Gets placeholders and remove any duplicates as they appear
             
-            variables.append(list(subList))
-            subList.clear()
+                Args:
+                location: locations of requests (either physical or virtual)
+                *argv: one or more request types
+            returns:
+                list[str]
+        """
+        variables: list[str]= []
+        subList: list[str] = []
+        
+        #TODO: Need to make sure argv provides correct data and there is more than one arg provided
+
+        print(requests)
+        for request in requests:
+            print(f'***{request}')
+            doc = docx2txt.process(f'{ self.templateDir }{ location }/{ request }.docx')
+            doc_Regex = re.compile(r'\$\{.*?\}')
+            formVariables = doc_Regex.findall(doc)
+
+            for key in formVariables:
+                cleanedKey=re.sub("[${}]", "", key)
+                
+                if len(variables) == 0:
+                    subList.append(cleanedKey)
+                    subList.append('')
+
+                    splitKey = cleanedKey.split('|')
+                    for s in splitKey:
+                        subList.append(s)
+                    
+                    variables.append(list(subList))
+                    subList.clear()
+                else:
+                    # needed to use 'any' to check if an item is present in a 2D list.
+                    if not any(cleanedKey in subl for subl in variables):
+                        subList.append(cleanedKey)
+                        subList.append('')
+
+                        splitKey = cleanedKey.split('|')
+                        for s in splitKey:
+                            subList.append(s)
+                        
+                        variables.append(list(subList))
+                        subList.clear()
+                
+        for c in variables:
+            print(c[0])
             
         return variables
     
@@ -144,15 +175,16 @@ if __name__ == '__main__':
     
     docxPtr = createPDF(TEMPLATE_DIR, PDF_DIR)
     # Get the different locations
-    print(f'Locations: { docxPtr.getLocations() }')
+    #print(f'Locations: { docxPtr.getLocations() }')
     
     # Get the types of requests in a the Salisbury trust
-    print(f'Available requests in Salisbury: { docxPtr.getTypes("Salisbury") }')
+    #print(f'Available requests in Salisbury: { docxPtr.getTypes("Salisbury") }')
     
     # Get variables from
-    variables = docxPtr.getPlaceholders('Salisbury', 'Lung function test')
-
+    requests = ['Bronchoscopy 1', 'Bronchoscopy 2', 'Bronchoscopy 3']
+    variables = docxPtr.getPlaceholders('testing', requests)
     #print(variables)
+
     """variables['First name'] = 'John'
     variables['Last name'] = 'Smith'
     variables['Hospital ID-integer'] = '123456'

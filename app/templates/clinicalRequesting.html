@@ -2,23 +2,14 @@
 
 {% block main %}
 
-<div id="mainBody">
+  <div class="requestsSelected">
+      <b>Scans selected:</b> 
+      {% for item in requestsChecked %}
+        {{item}}{% if not loop.last %},{% endif %}
+      {% endfor %}
+  </div>
 
   <form action="clinicalRequestSubmit" method="post">
-    <div>
-          <div class='row'>
-              <div class='columnL input'>
-                <h1 class="app-page-heading">
-                  {{ trans['Spin up an environment'] }} Requests
-                </h1>
-              </div>
-              <div class='columnR'>
-                  {{ locationDropDown|safe }}
-              </div>
-          </div>
-    </div>
-
-  
     <div class='formWrapper'>
       {{ formHTML|safe }}
     </div>
@@ -27,28 +18,6 @@
     </button>
   </form>
 
-
-
-  
-  <table>
-    <thead>
-      <th>Placeholder full name</th>
-      <th>Variable 1</th>
-      <th>Variable 2</th>
-    </thead>
-    <body>
-        {% for key in variables %}
-        <tr>
-          <td>{{key[2]}}</td>
-          <td>{{key[3]}}</td>
-          <td>{{key[4]}}</td>
-        </tr>
-        {% endfor %}
-      </tr>
-    </tbody>
-  </table>
-
-
   <label class="nhsuk-label" for="select-1">
     {{ trans['Use the link below to start up a new command line'] }}
   </label>
@@ -56,5 +25,5 @@
   <p><a href="/" hx-target="#mainBody" hx-get="/commandLine"">
     {{ trans['Command line'] }}
   </a></p>
-</div>
+
 {% endblock %}

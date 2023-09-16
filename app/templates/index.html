@@ -2,27 +2,21 @@
 
 {% block main %}
 
-<div id="mainBody">
-
-  <form action="clinicalRequestSubmit" method="post">
-    <div>
-          <div class='row'>
-              <div class='columnL input'>
-                <h1 class="app-page-heading">
-                  {{ trans['Spin up an environment'] }} Requests
-                </h1>
-              </div>
-              <div class='columnR'>
-                <div class="locationSelect-div-padding">
-                  <select class="locationSelect" name="locations" id="location">
-                    {{ locationOptionsHTML|safe }}
-                  </select>
-                </div>
-              </div>
-          </div>
+  <form action="/clinicalRequesting" method="post">
+    <div class='formWrapper'>
+      <div class='row'>
+        <div class='columnL'>
+            <label for="demographicsDrop">Demographics drop</label>
+        </div>
+        <div class='columnR'>
+            <input type="text" class="inputLarge high" name="democraphics drop" value="">
+        </div>
     </div>
-    a
-    {{ clinicalRequestTypes }}
-    b
-
+      {{ clinicalRequestTypesHTML|safe }}
+    </div>
+    <button class="nhsuk-button" data-module="nhsuk-button" type="submit" style="float: right;">
+      Submit
+    </button>
+  </form>
+    
 {% endblock %}
