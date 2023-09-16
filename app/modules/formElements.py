@@ -1,6 +1,10 @@
 #!/usr/bin/python3
 
 from datetime import date
+import sys
+
+sys.path.append('/requests/functions')
+import constants as C
 
 class formElements():
     def __init__(self) -> None:
@@ -23,7 +27,7 @@ class formElements():
         for placeholder in placeholders:
             #print(placeholder[0])
             PFull: str = placeholder[0]
-            P2: str = placeholder[2].strip()
+            P2: str = placeholder[2].strip() #TODO: check if removing strip works, as now strip in createPDF.py getPlaceholders function
             p2: str = placeholder[2].lower()
 
 
@@ -44,12 +48,15 @@ class formElements():
                 #print(f'{ placeholder[2] } is to show today\'s date - {date.today().strftime("%d/%m/%Y") }')
 
             elif p2 == 'title':
-                P3 = placeholder[3].strip()
+                P3 = placeholder[3].strip() #TODO: check if removing strip works, as now strip in createPDF.py getPlaceholders function
                 formHTML += self.wrapHTML()
                 formHTML += self.wrapHTML('', f"""<div class="radioTitle">{ P3 }</div> \
                                           <input type="hidden" name="{ PFull }" value="">""")
                 
             else:
+                # If only one variable in placeholder, then this will default to a string.
+                # NB: a single variable placeholder has its whole name, its return value and its name again
+                # and hence length of 3 below.
                 if len(placeholder) == 3:
                     formHTML += self.wrapHTML(f'<label for="{ PFull }">{ P2 }</label>', \
                                 f'<input type="text" class="inputLarge" name="{ PFull }" value="">')
@@ -107,3 +114,25 @@ class formElements():
         </div>\n"""
 
         return wrappedHTML
+
+    def extractResults(self, pHolders, request):
+
+        #TODO: verify the above arguments
+
+        for x in range(len(pHolders)):
+            if len(pHolders[x]) == 3:
+                pHolders[x][1] = request.form.get(pHolders[x][0])
+            if len(pHolders[x]) >= 4:
+                if any([y in pHolders[x][3] for y in ['radio', 'checkbox']]):
+                    if request.form.get(pHolders[x][0]) != None:
+                        pHolders[x][1] = C.CHECKED
+                    else:
+                        pHolders[x][1] = C.UNCHECKED
+                
+                else:
+                    pHolders[x][1] = request.form.get(pHolders[x][0])
+                    #print(f'{ requestS} - { request.form.get(requestS[0]) }')
+
+
+
+        return pHolders

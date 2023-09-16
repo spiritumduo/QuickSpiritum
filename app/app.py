@@ -40,24 +40,10 @@ def index():
             lastSelectedLocation = request.form['locations']
     
     docxPtr = createPDF(TEMPLATE_DIR, PDF_DIR)
-    # Get the different locations
-    #print(f'Locations: { docxPtr.getLocations() }')
-
-    getLocations = docxPtr.getLocations()
-    session['clinicalRequests'] = docxPtr.getTypes(lastSelectedLocation)
 
 
-    if len(getLocations) == 0:
-        raise Exception(f'No locations found in templates folder!')
-        return
-
-    for location in getLocations:
-        if location == lastSelectedLocation:
-            locationOptionsHTML += f"""<option selected="selected" value="{ location }">{ location }</option>\n"""
-        else:
-            locationOptionsHTML += f"""<option value="{ location }">{ location }</option>\n"""
+    locationOptionsHTML = locationOptionsHTMLF()
     
-
     clinicalRequestTypes = docxPtr.getTypes(lastSelectedLocation)
     preparedFormElements = formElements()
 
@@ -79,6 +65,7 @@ def index():
 @app.route("/clinicalRequesting", methods=['GET', 'POST'])
 def clinicalRequesting():
     locationOptionsHTML:str = ''
+    locationDropDown: str = ''
     placeholders: list[str] = []
     requestsChecked: list[str] = []
     #TODO: need to initiatise all local variables
@@ -91,40 +78,28 @@ def clinicalRequesting():
         return render_template('500.html', trans=trans)
 
     docxPtr = createPDF(TEMPLATE_DIR, PDF_DIR)
-    getLocations = docxPtr.getLocations()
+    #getLocations = docxPtr.getLocations()
 
     #print(session['clinicalRequests'])
     for r in session['clinicalRequests']:
-        print(r)
+        #print(r)
         if request.form.get(r) != None:
             requestsChecked.append(r)
-            print(f'{ r } was selected!')
+            #print(f'{ r } was selected!')
         else:
-            print(f'{ r } was NOT selected!')
+            #print(f'{ r } was NOT selected!')
+            pass
     
     placeholders.extend(docxPtr.getPlaceholders(lastSelectedLocation, requestsChecked))
     
     session['placeholders'] = placeholders
+    session['requestsChecked'] = requestsChecked
 
     #TODO: likely need to add this to next page or index page after submission
     #session.pop('clinicalRequests')
 
-    if len(getLocations) == 0:
-        raise Exception(f'No locations found in templates folder!')
-        return
+    locationOptionsHTML = locationOptionsHTMLF()
 
-    for location in getLocations:
-        if location == lastSelectedLocation:
-            locationOptionsHTML += f"""<option selected="selected" value="{ location }">{ location }</option>\n"""
-        else:
-            locationOptionsHTML += f"""<option value="{ location }">{ location }</option>\n"""
-
-    locationDropDown = f"""<div class="locationSelect-div-padding">
-                                <select class="locationSelect" name="locations" id="location">
-                                    { locationOptionsHTML }
-                                </select>
-                            </div>"""
-    
     preparedFormElements = formElements()
     formHTML = preparedFormElements.createElements(placeholders)
 
@@ -141,17 +116,62 @@ def clinicalRequesting():
 
 @app.route('/clinicalRequestSubmit', methods=['GET', 'POST'])
 def clinicalRequestSubmit():
+    placeHoldersUpdated = []
+    PDFPath: str = ''
+
     if request.method == 'POST':
-        print(session['placeholders'])
+        locationOptionsHTML:str = ''
+        
+
+        locationOptionsHTML = locationOptionsHTMLF()
+
+        #print(session['placeholders'])
+        preparedFormElements = formElements()
+        placeHoldersUpdated = preparedFormElements.extractResults(session['placeholders'], request)
+
+        
+        for r in placeHoldersUpdated:
+            print(r)
+
+        docxPtr = createPDF(TEMPLATE_DIR, PDF_DIR)
+
+        for r in session['requestsChecked']:
+            PDFPath = docxPtr.create(lastSelectedLocation, r, placeHoldersUpdated, "Smith, John, 1234567")
+            print(PDFPath)
+
         return render_template('clinicalRequestSubmitted.html', 
-                               trans=trans)
+                                locationOptionsHTML=locationOptionsHTML,
+                                trans=trans)
+    
     elif request.method == 'GET':
         return render_template('500.html', 
                                trans=trans)
+    
     else:
         return render_template('500.html', 
                                trans=trans)
     
+
+def locationOptionsHTMLF():
+    locationOptionsHTML: str = ''
+
+    docxPtr = createPDF(TEMPLATE_DIR, PDF_DIR)
+    getLocations = docxPtr.getLocations()
+
+    if len(getLocations) == 0:
+        raise Exception(f'No locations found in templates folder!')
+        return
+
+    session['clinicalRequests'] = docxPtr.getTypes(lastSelectedLocation)
+
+    for location in getLocations:
+        if location == lastSelectedLocation:
+            locationOptionsHTML += f"""<option selected="selected" value="{ location }">{ location }</option>\n"""
+        else:
+            locationOptionsHTML += f"""<option value="{ location }">{ location }</option>\n"""
+    
+    return locationOptionsHTML
+
 
  
 if __name__ == '__main__':

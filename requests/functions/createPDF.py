@@ -65,20 +65,20 @@ class createPDF():
             returns:
                 list[str]
         """
-        variables: list[str]= []
+        variables = [] #TODO: hint thype for 2D lists??
         subList: list[str] = []
         
         #TODO: Need to make sure argv provides correct data and there is more than one arg provided
 
-        print(requests)
+        #print(requests)
         for request in requests:
-            print(f'***{request}')
+            #print(f'***{request}')
             doc = docx2txt.process(f'{ self.templateDir }{ location }/{ request }.docx')
             doc_Regex = re.compile(r'\$\{.*?\}')
             formVariables = doc_Regex.findall(doc)
 
             for key in formVariables:
-                cleanedKey=re.sub("[${}]", "", key)
+                cleanedKey = re.sub("[${}]", "", key)
                 
                 if len(variables) == 0:
                     subList.append(cleanedKey)
@@ -86,7 +86,7 @@ class createPDF():
 
                     splitKey = cleanedKey.split('|')
                     for s in splitKey:
-                        subList.append(s)
+                        subList.append(s.strip())
                     
                     variables.append(list(subList))
                     subList.clear()
@@ -103,18 +103,19 @@ class createPDF():
                         variables.append(list(subList))
                         subList.clear()
                 
-        for c in variables:
-            print(c[0])
+        #for c in variables:
+        #    print(c[0])
             
         return variables
     
 
-    def create(self, location: str, type: str, variables: dict[str,str], demographics: str) -> str | None:
+    def create(self, location: str, type: str, variables, demographics: str):
         templatePath: str = f'{ self.templateDir }{ location }/{ type }.docx'
         tempDocxDir: str = f'{ self.outputPath }{ location }/temp/'
         tempDocxPath: str = f'{ tempDocxDir }{ type }_{ demographics }_'
         PDFPath: str = ''
         n: int = 1
+        variablesDict: dict[str,str] = {}
 
         #TODO: need to check location folder exists
         #TODO: need to check type template file exists.
@@ -140,23 +141,27 @@ class createPDF():
         PDFDir: str = f'{ self.outputPath }{ location }'
         PDFPath = f'{ self.outputPath }{ location }/{ type }_{ demographics }_{ n }.pdf'
 
-        try:
-            doc = Document(templatePath)
-            docx_replace(doc, **variables)
-            doc.save(tempDocxPath)
-        except:
+
+        for x in range(len(variables)):
+            variablesDict[variables[x][0]] = variables[x][1]
+
+        #try:
+        doc = Document(templatePath)
+        docx_replace(doc, **variablesDict)
+        doc.save(tempDocxPath)
+        """except:
             raise Exception(f'Could not create the .docx file "{ tempDocxPath }"!')
-            return None
+            return None"""
     
         if not os.path.isfile(tempDocxPath):
             raise Exception(f'"{tempDocxPath}" is not a valid filename!')
-            return False
+            return None
 
         libreofficeOutput = pexpect.spawn(f'libreoffice --headless --convert-to pdf "{ tempDocxPath }" --outdir "{ PDFDir }"')
         
         if libreofficeOutput.read()[0:7] != b'convert':
             raise Exception(f'Error with PDF creation via LibreOffice')
-            return False
+            return None
 
 
         #pexpect.run(f'libreoffice --headless --convert-to pdf "{ tempDocxPath }" --outdir "{ PDFDir }"')
@@ -165,7 +170,7 @@ class createPDF():
         #print(f'unoconvert "{ tempDocxPath }" "{ PDFPath }"')
 
         os.remove(tempDocxPath)
-        return True
+        return PDFPath
 
         
 
@@ -181,18 +186,21 @@ if __name__ == '__main__':
     #print(f'Available requests in Salisbury: { docxPtr.getTypes("Salisbury") }')
     
     # Get variables from
-    requests = ['Bronchoscopy 1', 'Bronchoscopy 2', 'Bronchoscopy 3']
-    variables = docxPtr.getPlaceholders('testing', requests)
+    #requests = ['Bronchoscopy 1', 'Bronchoscopy 2', 'Bronchoscopy 3']
+    variables = docxPtr.getPlaceholders('Salisbury', ['Lung function test'])
     #print(variables)
 
-    """variables['First name'] = 'John'
-    variables['Last name'] = 'Smith'
-    variables['Hospital ID-integer'] = '123456'
-    variables['Contraindications-radio-Yes'] = C.UNCHECKED
-    variables['Contraindications-radio-No'] = C.CHECKED"""
+    # These might not work any more as Lists instead of Dic are bring used.
+
+    variables[0][1] = '123456'
+    variables[2][1] = 'John'
+    variables[3][1] = 'Smith'
+    variables[5][1] = C.UNCHECKED
+    variables[6][1] = C.CHECKED
 
     """print('Placeholders for Lung function tests at Salisbury are:')
     for v in variables:
-        print(v)"""
-    
-"""    tempDocxPath = docxPtr.create('Salisbury', 'Lung function test', variables, "Smith, John, 1234567")"""
+        print(v)
+    """
+    PDFPath = docxPtr.create('Salisbury', 'Lung function test', variables, "Smith, John, 1234567")
+    print(PDFPath)
