@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from datetime import date
+import datetime
 import sys
 
 sys.path.append('/requests/functions')
@@ -50,8 +51,10 @@ class formElements():
             elif p2 == 'title':
                 P3 = placeholder[3].strip() #TODO: check if removing strip works, as now strip in createPDF.py getPlaceholders function
                 formHTML += self.wrapHTML()
-                formHTML += self.wrapHTML('', f"""<div class="radioTitle">{ P3 }</div> \
-                                          <input type="hidden" name="{ PFull }" value="">""")
+                formHTML += self.wrapHTML('', 
+                    f"""<div class="radioTitle">{ P3 }
+                    </div>
+                    <input type="hidden" name="{ PFull }" value="">""")
                 
             else:
                 # If only one variable in placeholder, then this will default to a string.
@@ -59,16 +62,19 @@ class formElements():
                 # and hence length of 3 below.
                 if len(placeholder) == 3:
                     formHTML += self.wrapHTML(f'<label for="{ PFull }">{ P2 }</label>', \
-                                f'<input type="text" class="inputLarge" name="{ PFull }" value="">')
+                                f'<input type="text" class="inputLarge" id="{ PFull }" name="{ PFull }" value="">')
+                    
                 if len(placeholder) >= 4:
                     p3 = placeholder[3].lower().strip()
 
                     if p3 == 'integer':
                         formHTML += self.wrapHTML(f'<label for="{ PFull }">{ P2 }</label>', \
-                                f'<input type="number" class="inputLarge" name="{ PFull }" value="">')
+                                f'<input type="number" class="inputLarge" id="{ PFull }" name="{ PFull }" value="">')
+                        
                     elif p3 == 'date':
-                        None
-                        #print(f'{ placeholder[2] } is an date')
+                        formHTML += self.wrapHTML(f'<label for="{ PFull }">{ P2 }</label>', \
+                                f'<input type="date" class="inputLarge" id="{ PFull }" name="{ PFull }" value="">')
+
                     elif p3 == 'radio':
                         if len(placeholder) < 5:
                             raise Exception(f'Missing argument for radio button!')
@@ -86,16 +92,21 @@ class formElements():
 
                         P4 = placeholder[4].strip()
 
+                        # id links items in CSS, name is the return variable name to the server and
+                        # value is the value returned on selection with the name to the server if
+                        # selected.
                         formHTML += self.wrapHTML('', \
                 f"""<div>
-                        <input type="radio" class="inputLarge" name="{ PFull }" value="">
-                        <label for="{ PFull }">{ P4 }</label>
-                    </div>""")
+                    <input type="radio" class="inputLarge" id="{ PFull }" name="{ P2 }" value="{ PFull }">
+                    <label for="{ PFull }">{ P4 }</label>
+                </div>""")
                         
                     elif p3 == 'checkbox':
-                        formHTML += self.wrapHTML('', f"""<div>
-                    <input type="checkbox" class="inputLarge" name="{ PFull }" value="">
-                <label for="{ PFull }">{ P2 }</label></div>""")
+                        formHTML += self.wrapHTML('', 
+                f"""<div>
+                    <input type="checkbox" class="inputLarge" id="{ PFull }" name="{ P2 }" value="{ PFull }">
+                    <label for="{ PFull }">{ P2 }</label>
+                </div>""")
                         
                     else:
                         None
@@ -119,19 +130,49 @@ class formElements():
 
         #TODO: verify the above arguments
 
-        for x in range(len(pHolders)):
-            if len(pHolders[x]) == 3:
-                pHolders[x][1] = request.form.get(pHolders[x][0])
-            if len(pHolders[x]) >= 4:
-                if any([y in pHolders[x][3] for y in ['radio', 'checkbox']]):
-                    if request.form.get(pHolders[x][0]) != None:
-                        pHolders[x][1] = C.CHECKED
-                    else:
-                        pHolders[x][1] = C.UNCHECKED
+        for key, item in enumerate(pHolders):
+            p2: str = item[2].lower()
+
+            if p2 == 'line':
+                pass
+
+            elif p2 == 'signature':
+                item[1] = ''
                 
-                else:
-                    pHolders[x][1] = request.form.get(pHolders[x][0])
-                    #print(f'{ requestS} - { request.form.get(requestS[0]) }')
+            elif p2 == 'configuration':
+                item[1] = ''
+                #TODO: Will need to extract the config info and pass back somehow
+
+            elif p2 == 'now':
+                item[1] = date.today().strftime("%d/%m/%y")
+
+            elif p2 == 'title':
+                pass
+            
+            else:
+                if len(item) == 3:
+                    item[1] = request.form.get(item[0])
+
+                if len(item) >= 4:
+                    p3 = item[3].lower()
+
+                    if p3 == 'date':
+                        try:
+                            item[1] = datetime.datetime.strptime(request.form.get(item[0]), '%Y-%m-%d').strftime('%d/%m/%Y')
+                        except:
+                            pass
+
+                    elif any([y in p3 for y in ['radio', 'checkbox']]):
+                        print(request.form.get(item[2]))
+                        if item[0] == request.form.get(item[2]):
+                            item[1] = C.CHECKED
+                        else:
+                            item[1] = C.UNCHECKED
+                    
+                    else:
+                        # Text boxes, etc
+                        item[1] = request.form.get(item[0])
+                        #print(f'{ requestS} - { request.form.get(requestS[0]) }')
 
 
 

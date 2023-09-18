@@ -1,14 +1,14 @@
 #!/usr/bin/python3
 
 import os
-import docx
+import docx #TODO: perhaps can remove this import
 from docx import Document
 from python_docx_replace import docx_replace
-import shutil
+import shutil #TODO: perhaps can remove this import
 import pexpect
 import re
 import docx2txt
-from docx2pdf import convert
+from docx2pdf import convert #TODO: perhaps can remove this import
 from pathlib import Path
 
 
@@ -17,6 +17,10 @@ import constants as C
 #TODO: try and move these to the contants module
 TEMPLATE_DIR = os.getenv('TEMPLATE_DIR')
 PDF_DIR = os.environ.get('PDF_DIR')
+
+from docxtpl import DocxTemplate, InlineImage
+from docx.shared import Mm
+import jinja2
 
 
 
@@ -34,7 +38,7 @@ class createPDF():
         locations = [directory for directory in os.listdir(self.templateDir) if os.path.isdir(self.templateDir+directory)]
         return locations
     
-
+    #TODO: Perhaps can use docx_get_keys() instead to get keys
     def getTypes(self, location: str) -> list[str]:
         types: list[str] = []
         typesPath = f'{self.templateDir}{location}/'
@@ -81,6 +85,7 @@ class createPDF():
                 cleanedKey = re.sub("[${}]", "", key)
                 
                 if len(variables) == 0:
+                    # See lower down!
                     subList.append(cleanedKey)
                     subList.append('')
 
@@ -93,13 +98,14 @@ class createPDF():
                 else:
                     # needed to use 'any' to check if an item is present in a 2D list.
                     if not any(cleanedKey in subl for subl in variables):
+                        #TODO: could you function for below as same is done above
                         subList.append(cleanedKey)
                         subList.append('')
 
                         splitKey = cleanedKey.split('|')
                         for s in splitKey:
-                            subList.append(s)
-                        
+                            subList.append(s.strip())
+
                         variables.append(list(subList))
                         subList.clear()
                 
@@ -108,8 +114,8 @@ class createPDF():
             
         return variables
     
-
-    def create(self, location: str, type: str, variables, demographics: str):
+    #TODO: could rewrite this to use the python-docx-template library
+    def create(self, location: str, type: str, variables, demographics: str, signaturePath):
         templatePath: str = f'{ self.templateDir }{ location }/{ type }.docx'
         tempDocxDir: str = f'{ self.outputPath }{ location }/temp/'
         tempDocxPath: str = f'{ tempDocxDir }{ type }_{ demographics }_'
@@ -152,10 +158,12 @@ class createPDF():
         """except:
             raise Exception(f'Could not create the .docx file "{ tempDocxPath }"!')
             return None"""
-    
+        
         if not os.path.isfile(tempDocxPath):
             raise Exception(f'"{tempDocxPath}" is not a valid filename!')
             return None
+        
+        self.addPicture(tempDocxPath, signaturePath)
 
         libreofficeOutput = pexpect.spawn(f'libreoffice --headless --convert-to pdf "{ tempDocxPath }" --outdir "{ PDFDir }"')
         
@@ -171,8 +179,26 @@ class createPDF():
 
         os.remove(tempDocxPath)
         return PDFPath
+    
 
-        
+    def addPicture(self, file, image, placeholder="signature") -> None:
+
+        if not os.path.exists(file):
+            raise Exception(f'Docx filename "{ file }" does not exist')
+            return None
+        if not os.path.exists(image):
+            raise Exception(f'Image filename "{ image }" does not exist')
+            return None
+
+        tpl = DocxTemplate(file)
+
+        context = {placeholder: InlineImage(tpl, image, width=Mm(20))}
+        # testing that it works also when autoescape has been forced to True
+        #jinja_env = jinja2.Environment(autoescape=True)
+        tpl.render(context) #, jinja_env)
+        tpl.save(file)
+        return None
+
 
 
 if __name__ == '__main__':
@@ -187,20 +213,22 @@ if __name__ == '__main__':
     
     # Get variables from
     #requests = ['Bronchoscopy 1', 'Bronchoscopy 2', 'Bronchoscopy 3']
-    variables = docxPtr.getPlaceholders('Salisbury', ['Lung function test'])
+    #variables = docxPtr.getPlaceholders('Salisbury', ['Lung function test'])
     #print(variables)
 
     # These might not work any more as Lists instead of Dic are bring used.
 
-    variables[0][1] = '123456'
+    """variables[0][1] = '123456'
     variables[2][1] = 'John'
     variables[3][1] = 'Smith'
     variables[5][1] = C.UNCHECKED
-    variables[6][1] = C.CHECKED
+    variables[6][1] = C.CHECKED"""
 
     """print('Placeholders for Lung function tests at Salisbury are:')
     for v in variables:
         print(v)
     """
-    PDFPath = docxPtr.create('Salisbury', 'Lung function test', variables, "Smith, John, 1234567")
-    print(PDFPath)
+    #PDFPath = docxPtr.create('Salisbury', 'Lung function test', variables, "Smith, John, 1234567")
+    #print(PDFPath)
+
+    docxPtr.addPicture('/requests/testing/Lung function test.docx', '/requests/signatures/Mark Bailey.jpeg')

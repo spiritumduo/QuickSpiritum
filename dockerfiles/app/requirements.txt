@@ -1,6 +1,7 @@
 docx2txt
 docx2pdf
 docxedit
+docxtpl
 flask
 mypy
 mypy-extensions

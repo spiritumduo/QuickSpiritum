@@ -130,14 +130,14 @@ def clinicalRequestSubmit():
         placeHoldersUpdated = preparedFormElements.extractResults(session['placeholders'], request)
 
         
-        for r in placeHoldersUpdated:
-            print(r)
+        #for r in placeHoldersUpdated:
+        #    print(r)
 
         docxPtr = createPDF(TEMPLATE_DIR, PDF_DIR)
 
         for r in session['requestsChecked']:
-            PDFPath = docxPtr.create(lastSelectedLocation, r, placeHoldersUpdated, "Smith, John, 1234567")
-            print(PDFPath)
+            PDFPath = docxPtr.create(lastSelectedLocation, r, placeHoldersUpdated, "Smith, John, 1234567", '/requests/signatures/Mark Bailey.jpeg')
+            #print(PDFPath)
 
         return render_template('clinicalRequestSubmitted.html', 
                                 locationOptionsHTML=locationOptionsHTML,
