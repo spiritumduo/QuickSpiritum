@@ -23,7 +23,7 @@ lastSelectedLocation: str = 'Salisbury'
 
 # instance of flask application
 app = Flask(__name__)
-app.secret_key = "adawcsd" #os.getenv('FLASK_KEY')
+app.secret_key = os.getenv('FLASK_KEY')
  
 
 @app.route("/", methods=['GET', 'POST'])
