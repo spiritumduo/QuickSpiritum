@@ -17,6 +17,10 @@ TEMPLATE_DIR = os.getenv('TEMPLATE_DIR')
 PDF_DIR = os.environ.get('PDF_DIR')
 
 trans = {'yes':'qui', 'no':'noi', 'portal': 'portal'}
+users = [
+    ["mark.bailey", "Mark Bailey"],
+    ["john.williams" , "John Williams"]
+]
 
 # A temporary variable. This needs to be in a database and associated with a user
 lastSelectedLocation: str = 'Salisbury'
@@ -34,6 +38,8 @@ def index():
     clinicalRequestTypesHTML: str = ''
 
     #TODO: clear out session info before starting start page
+    session.pop('placeholders')
+    session.pop('requestsChecked')
 
     if 'locations' in request.form:
         if request.form['locations'] != lastSelectedLocation:
@@ -101,7 +107,7 @@ def clinicalRequesting():
     locationOptionsHTML = locationOptionsHTMLF()
 
     preparedFormElements = formElements()
-    formHTML = preparedFormElements.createElements(placeholders)
+    formHTML = preparedFormElements.createElements(placeholders, users, 0)
 
 
     return render_template('clinicalRequesting.html', 

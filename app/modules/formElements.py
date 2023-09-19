@@ -11,7 +11,7 @@ class formElements():
     def __init__(self) -> None:
         return
     
-    def createElements(self, placeholders) -> str | None:
+    def createElements(self, placeholders, allUsers, currentUser) -> str | None:
         formHTML: str = ''
         radioTitleHolder: str = ''
         radioTitleHolder: str = ''
@@ -37,16 +37,16 @@ class formElements():
                 formHTML += self.wrapHTML()
 
             elif p2 == 'signature':
-                formHTML += self.wrapHTML(f'<label for="{ PFull }">Signature</label>', \
-                                f'<input type="text" class="inputLarge" name="{ PFull }" value="">')
+                pass
+                """formHTML += self.wrapHTML(f'<label for="{ PFull }">Signature</label>', \
+                                f'<input type="text" class="inputLarge" name="{ PFull }" value="{ }">')"""
                 
             elif p2 == 'configuration':
-                None
+                pass
                 #print(f'{ placeholder[2] } holds configuration information')
 
             elif p2 == 'now':
-                None
-                #print(f'{ placeholder[2] } is to show today\'s date - {date.today().strftime("%d/%m/%Y") }')
+                pass
 
             elif p2 == 'title':
                 P3 = placeholder[3].strip() #TODO: check if removing strip works, as now strip in createPDF.py getPlaceholders function
@@ -61,8 +61,14 @@ class formElements():
                 # NB: a single variable placeholder has its whole name, its return value and its name again
                 # and hence length of 3 below.
                 if len(placeholder) == 3:
+                    value1 = ''
+
+                    #Temp code
+                    if p2 == 'consultant name' or p2 == 'your name':
+                        value1 = allUsers[0][1]
+
                     formHTML += self.wrapHTML(f'<label for="{ PFull }">{ P2 }</label>', \
-                                f'<input type="text" class="inputLarge" id="{ PFull }" name="{ PFull }" value="">')
+                                f'<input type="text" class="inputLarge" id="{ PFull }" name="{ PFull }" value="{ value1 }">')
                     
                 if len(placeholder) >= 4:
                     p3 = placeholder[3].lower().strip()
@@ -163,7 +169,6 @@ class formElements():
                             pass
 
                     elif any([y in p3 for y in ['radio', 'checkbox']]):
-                        print(request.form.get(item[2]))
                         if item[0] == request.form.get(item[2]):
                             item[1] = C.CHECKED
                         else:
