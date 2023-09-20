@@ -1,14 +1,19 @@
 # How to Build an App
 
-1. Create a new respository on GitHub
-2. Clone above respository onto VS Code
-3. Build a Docker-compose.yaml file to start up environment
-4. May need separate Dockerfiles to build containere environments
-5. Log into container with
+* Create a new respository on GitHub
+* Clone above respository onto VS Code
+* Build a Docker-compose.yaml file to start up environment
+* May need separate Dockerfiles to build containere environments
+* Log into container with
 >> docker exec -it requests bash
-6. pip freeze to get requirements and copy into requirements.txt file
+* pip freeze to get requirements and copy into requirements.txt file
 >> pip freeze
-7. mypy to check for typing
+* mypy to check for typing
+* Learn python
+* Write python with PEP8 styling (to improve readability) - https://realpython.com/python-pep8/
+* Linter for better styling
+* mypi for hint type checking 
+* Add a devcontainer.json - here you can add what python version you want for linters and so on
 
 Notes:
 If Docker cannot build the container (eg "network [network long name] not found), try this:

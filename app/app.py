@@ -1,20 +1,20 @@
 #!/usr/bin/python3
 
-# import flask module
+""" Web app to collect patient information for creating PDFs of request forms
+
+"""
 
 from flask import Flask, request, render_template, redirect, url_for, session
 import sys
 import os
 sys.path.append('/requests/functions')
-from createPDF import createPDF
+from create_pdf import CreatePDF
 sys.path.append('/app/modules')
 from formElements import formElements
 
 #TODO: need to have a data cleanser that fixes illegal characters in the placeholders received from the docx file (eg ' and ")
 
 import constants as C
-TEMPLATE_DIR = os.getenv('TEMPLATE_DIR')
-PDF_DIR = os.environ.get('PDF_DIR')
 
 trans = {'yes':'qui', 'no':'noi', 'portal': 'portal'}
 users = [
@@ -48,12 +48,12 @@ def index():
         if request.form['locations'] != lastSelectedLocation:
             lastSelectedLocation = request.form['locations']
     
-    docxPtr = createPDF(TEMPLATE_DIR, PDF_DIR)
+    docxPtr = CreatePDF(C.TEMPLATE_DIR, C.PDF_DIR)
 
 
     locationOptionsHTML = locationOptionsHTMLF()
     
-    clinicalRequestTypes = docxPtr.getTypes(lastSelectedLocation)
+    clinicalRequestTypes = docxPtr.get_types(lastSelectedLocation)
     preparedFormElements = formElements()
 
     
@@ -86,8 +86,8 @@ def clinicalRequesting():
     else:
         return render_template('500.html', trans=trans)
 
-    docxPtr = createPDF(TEMPLATE_DIR, PDF_DIR)
-    #getLocations = docxPtr.getLocations()
+    docxPtr = CreatePDF(C.TEMPLATE_DIR, C.PDF_DIR)
+    #get_locations = docxPtr.get_locations()
 
     #print(session['clinicalRequests'])
     for r in session['clinicalRequests']:
@@ -99,7 +99,7 @@ def clinicalRequesting():
             #print(f'{ r } was NOT selected!')
             pass
     
-    placeholders.extend(docxPtr.getPlaceholders(lastSelectedLocation, requestsChecked))
+    placeholders.extend(docxPtr.get_placeholders(lastSelectedLocation, requestsChecked))
     
     session['placeholders'] = placeholders
     session['requestsChecked'] = requestsChecked
@@ -157,7 +157,7 @@ def clinicalRequestSubmit():
         
         demographicsForPDF = f'{ lastname }, { firstname }, { hospitalID }'
 
-        docxPtr = createPDF(TEMPLATE_DIR, PDF_DIR)
+        docxPtr = CreatePDF(C.TEMPLATE_DIR, C.PDF_DIR)
 
         for r in session['requestsChecked']:
             PDFPath = docxPtr.create(lastSelectedLocation, r, placeHoldersUpdated, demographicsForPDF, '/requests/signatures/Mark Bailey.jpeg')
@@ -179,16 +179,16 @@ def clinicalRequestSubmit():
 def locationOptionsHTMLF():
     locationOptionsHTML: str = ''
 
-    docxPtr = createPDF(TEMPLATE_DIR, PDF_DIR)
-    getLocations = docxPtr.getLocations()
+    docxPtr = CreatePDF(C.TEMPLATE_DIR, C.PDF_DIR)
+    get_locations = docxPtr.get_locations()
 
-    if len(getLocations) == 0:
+    if len(get_locations) == 0:
         raise Exception(f'No locations found in templates folder!')
         return
 
-    session['clinicalRequests'] = docxPtr.getTypes(lastSelectedLocation)
+    session['clinicalRequests'] = docxPtr.get_types(lastSelectedLocation)
 
-    for location in getLocations:
+    for location in get_locations:
         if location == lastSelectedLocation:
             locationOptionsHTML += f"""<option selected="selected" value="{ location }">{ location }</option>\n"""
         else:
