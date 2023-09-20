@@ -38,8 +38,11 @@ def index():
     clinicalRequestTypesHTML: str = ''
 
     #TODO: clear out session info before starting start page
-    session.pop('placeholders')
-    session.pop('requestsChecked')
+    try:
+        session.pop('placeholders')
+        session.pop('requestsChecked')
+    except:
+        pass
 
     if 'locations' in request.form:
         if request.form['locations'] != lastSelectedLocation:
@@ -124,6 +127,7 @@ def clinicalRequesting():
 def clinicalRequestSubmit():
     placeHoldersUpdated = []
     PDFPath: str = ''
+    demographicsForPDF: str = ''
 
     if request.method == 'POST':
         locationOptionsHTML:str = ''
@@ -139,10 +143,24 @@ def clinicalRequestSubmit():
         #for r in placeHoldersUpdated:
         #    print(r)
 
+        firstname = ''
+        lastname = ''
+        hospitalID = ''
+
+        for index, item in enumerate(placeHoldersUpdated):
+            if item[2].lower() == "hospital id":
+                hospitalID = item[1]
+            elif item[2].lower() == "first name":
+                firstname = item[1]
+            elif item[2].lower() == "last name":
+                lastname = item[1]
+        
+        demographicsForPDF = f'{ lastname }, { firstname }, { hospitalID }'
+
         docxPtr = createPDF(TEMPLATE_DIR, PDF_DIR)
 
         for r in session['requestsChecked']:
-            PDFPath = docxPtr.create(lastSelectedLocation, r, placeHoldersUpdated, "Smith, John, 1234567", '/requests/signatures/Mark Bailey.jpeg')
+            PDFPath = docxPtr.create(lastSelectedLocation, r, placeHoldersUpdated, demographicsForPDF, '/requests/signatures/Mark Bailey.jpeg')
             #print(PDFPath)
 
         return render_template('clinicalRequestSubmitted.html', 

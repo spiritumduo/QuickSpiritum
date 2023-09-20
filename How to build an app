@@ -9,3 +9,7 @@
 6. pip freeze to get requirements and copy into requirements.txt file
 >> pip freeze
 7. mypy to check for typing
+
+Notes:
+If Docker cannot build the container (eg "network [network long name] not found), try this:
+>> docker-compose up --force-recreate -d
