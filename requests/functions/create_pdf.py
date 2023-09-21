@@ -91,6 +91,7 @@ class CreatePDF():
         
         for request in requests:
             doc = docx2txt.process(f'{ self.template_dir }{ location }/{ request }.docx')
+            #TODO: need to check if above file exists!
             doc_Regex = re.compile(r'\$\{.*?\}')
             raw_placeholders = doc_Regex.findall(doc)
 
@@ -225,12 +226,6 @@ class CreatePDF():
 
         return None
 
-
-def sum(arg):
-    total = 0
-    for val in arg:
-        total += val
-    return total
 
 
 if __name__ == '__main__':
