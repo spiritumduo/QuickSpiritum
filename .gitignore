@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 
 # Extra
+.DS_Store
 logs/
 requests/archive/
 requests/signatures/
