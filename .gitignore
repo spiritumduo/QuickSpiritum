@@ -6,8 +6,7 @@ __pycache__/
 # Extra
 logs/
 requests/archive/
-requests/tests/Lung function test_Baker, Monika, 0208815_1 copy.pdf
-requests/tests/Lung function test_Baker, Monika, 0208815_1.pdf
+requests/signatures/
 
 
 # C extensions
