@@ -15,6 +15,7 @@ import constants as C
 
 #TODO: try and move these to the contants module
 
+#TODO: check env variables are available
 
 from docxtpl import DocxTemplate, InlineImage
 from docx.shared import Mm

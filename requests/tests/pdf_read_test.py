@@ -1,8 +1,8 @@
-from PyPDF2 import PdfReader
+"""from PyPDF2 import PdfReader
 import cv2
 import numpy as np
 from pdf2image import convert_from_path
-import pypdfium2 as pdfium
+import pypdfium2 as pdfium"""
 
 pic_1 = 'Lung function test_Baker, Monika, 0208815_1.pdf'
 pic_2 = 'Lung function test_Baker, Monika, 0208815_1 copy.pdf'
@@ -17,7 +17,7 @@ for page in reader.pages:
 
 
  
-pdf = pdfium.PdfDocument(pic_1)
+"""pdf = pdfium.PdfDocument(pic_1)
 n_pages = len(pdf)
 for page_number in range(n_pages):
     page = pdf.get_page(page_number)
@@ -30,7 +30,7 @@ for page_number in range(n_pages):
         greyscale=False,
         optimise_mode=pdfium.OptimiseMode.NONE,
     )
-    pil_image.save(f"image_{page_number+1}.png") 
+    pil_image.save(f"image_{page_number+1}.png") """
 
 
 """a = cv2.imread(pic_1)
