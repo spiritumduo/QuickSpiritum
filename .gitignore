@@ -4,10 +4,11 @@ __pycache__/
 *$py.class
 
 # Extra
+~$*
+.DS_Store
 logs/
-requests/archive/
+archive/
 requests/signatures/
-
 
 # C extensions
 *.so
