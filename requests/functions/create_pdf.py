@@ -26,21 +26,29 @@ class CreatePDF():
     """ Extract information from docx template and also create PDF with required information
     
     """
+
+
     def __init__(self, template_dir: str | None, output_path: str | None) -> None:
         if template_dir == None:
-            raise Exception(f'No template directory stored in environmental file .env')
+            raise ValueError(f'No template directory stored in environmental file .env')
+            return None
+
+        if not os.path.isdir(template_dir):
+            raise ValueError(f'Template directory "{ template_dir }" does not exist!')
             return None
         
         if output_path == None:
-            raise Exception(f'No output path stored in environmental file .env')
+            raise ValueError(f'No output path stored in environmental file .env')
             return None
+        
+        #No need to check if output_path exists, as it will be created in self.create()
         
         self.template_dir: str = str(template_dir)
         self.output_path: str = str(output_path)
         return None
     
 
-    def get_locations(self) -> list:
+    def get_locations(self) -> list | None:
         """ Get the 'locations' (physical or virtual) for a collection of different clinical requests
 
         """
@@ -49,9 +57,16 @@ class CreatePDF():
         # list of all content in a directory, filtered so only directories are returned
         locations = [directory for directory in os.listdir(self.template_dir)
                      if os.path.isdir(self.template_dir+directory)]
+        
+        if not locations:
+            raise RuntimeError(f'No locations folders found in "{ self.template_dir }" \
+                               template directory')
+            return None
+
         return locations
     
-    #TODO: Perhaps can use docx_get_keys() instead to get keys
+
+    #TODO: Perhaps can use docx_get_keys() instead to get keys (maybe will use python-docs-tempate)
     def get_types(self, location: str) -> list[str]:
         """ Get the types of tests available for a location
         

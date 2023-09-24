@@ -10,4 +10,4 @@ python-docx
 python-docx-replace
 pytest
 PyPDF2
-opencv-python
+diff-pdf-visually

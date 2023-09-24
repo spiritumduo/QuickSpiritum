@@ -14,6 +14,7 @@
 * Linter for better styling
 * mypi for hint type checking 
 * Add a devcontainer.json - here you can add what python version you want for linters and so on
+* https://en.wikipedia.org/wiki/Single-responsibility_principle
 
 Notes:
 If Docker cannot build the container (eg "network [network long name] not found), try this:

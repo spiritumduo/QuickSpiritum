@@ -1,9 +1,9 @@
 import unittest
 import sys
 import os
-import filecmp
 sys.path.append('/requests/functions')
 from create_pdf import CreatePDF
+from diff_pdf_visually import pdf_similar
 
 test_template_dir: str = '/requests/tests/test templates/'
 test_pdf_dir: str = '/requests/tests/test PDFs/'
@@ -13,6 +13,29 @@ comparison_pdf_path: str = '/requests/tests/compare PDFs/Location 1/Test templat
 
 
 class TestCreatePDF(unittest.TestCase):
+
+    def test_init(self):
+        """
+            Test that __init__ works
+        """
+        
+        CreatePDF(test_template_dir, test_pdf_dir)
+
+    def test_init_bad_paths(self):
+        """
+            Test that __init__ fails if env not defined or bad path for 1st arg
+        """
+        
+        with self.assertRaises(ValueError):
+            CreatePDF(None, test_pdf_dir)
+        
+        with self.assertRaises(ValueError):
+            CreatePDF('abc123', test_pdf_dir)
+        
+        with self.assertRaises(ValueError):
+            CreatePDF(test_template_dir, None)
+
+
     def test_get_locations(self):
         """
             Test what locations are available
@@ -21,8 +44,18 @@ class TestCreatePDF(unittest.TestCase):
 
         docxPtr = CreatePDF(test_template_dir, test_pdf_dir)
         locations = docxPtr.get_locations()
-        #TODO: should somehow cater for list to be in opposite direction
-        self.assertEqual(locations, ['Location 2', 'Location 1'])
+
+        self.assertEqual(sorted(locations), ['Location 1', 'Location 2'])
+
+
+    def test_get_locations_no_locations(self):
+        """
+            Check that RuntimeError is raised when no sub-folders present
+        """
+
+        with self.assertRaises(RuntimeError):
+            docxPtr = CreatePDF(f'{test_template_dir}Location 1/', test_pdf_dir)
+            locations = docxPtr.get_locations()
 
 
     def test_get_types(self):
@@ -110,14 +143,10 @@ class TestCreatePDF(unittest.TestCase):
         function_return = docxPtr.create('Location 1', 'Test template 1', placeholders, 'Doe, John, 12345', test_signature_file)
 
         self.assertEqual(function_return, test_pdf_output_path)
-        #self.assertEqual(placeholders, old_placeholders)
-        #self.assertTrue(filecmp.cmp(test_pdf_output_path, comparison_pdf_path))
-        #TODO: somehow need to compare PDF files
+        self.assertEqual(placeholders, old_placeholders)
+        self.assertTrue(pdf_similar(test_pdf_output_path, comparison_pdf_path))
 
         os.remove(function_return)
-
-
-
 
 
 if __name__ == '__main__':
