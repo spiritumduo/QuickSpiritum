@@ -43,8 +43,10 @@ class CreatePDF():
         
         #No need to check if output_path exists, as it will be created in self.create()
         
-        self.template_dir: str = str(template_dir)
-        self.output_path: str = str(output_path)
+        #self.template_dir: str = str(template_dir)
+        #self.output_path: str = str(output_path)
+        self.template_dir: str = '/requests/templates/'
+        self.output_path: str = '/archive/'
         return None
     
 
@@ -214,7 +216,7 @@ class CreatePDF():
             raise Exception(f'Error with PDF creation via LibreOffice')
             return None
 
-        os.remove(temp_docx_path)
+        #os.remove(temp_docx_path)
 
         return pdf_path
     

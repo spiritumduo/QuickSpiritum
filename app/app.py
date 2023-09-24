@@ -104,9 +104,6 @@ def clinicalRequesting():
     session['placeholders'] = placeholders
     session['requestsChecked'] = requestsChecked
 
-    #TODO: likely need to add this to next page or index page after submission
-    #session.pop('clinicalRequests')
-
     locationOptionsHTML = locationOptionsHTMLF()
 
     preparedFormElements = formElements()
@@ -128,6 +125,9 @@ def clinicalRequestSubmit():
     placeHoldersUpdated = []
     PDFPath: str = ''
     demographicsForPDF: str = ''
+    firstname:str = ''
+    lastname:str = ''
+    hospitalID:str = ''
 
     if request.method == 'POST':
         locationOptionsHTML:str = ''
@@ -143,9 +143,6 @@ def clinicalRequestSubmit():
         #for r in placeHoldersUpdated:
         #    print(r)
 
-        firstname = ''
-        lastname = ''
-        hospitalID = ''
 
         for index, item in enumerate(placeHoldersUpdated):
             if item[2].lower() == "hospital id":
@@ -161,7 +158,7 @@ def clinicalRequestSubmit():
 
         for r in session['requestsChecked']:
             PDFPath = docxPtr.create(lastSelectedLocation, r, placeHoldersUpdated, demographicsForPDF, '/requests/signatures/Mark Bailey.jpeg')
-            #print(PDFPath)
+            print(PDFPath)
 
         return render_template('clinicalRequestSubmitted.html', 
                                 locationOptionsHTML=locationOptionsHTML,

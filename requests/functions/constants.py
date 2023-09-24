@@ -4,8 +4,6 @@
 
 import os
 
-
-
 TEMPLATE_DIR: str | None = os.getenv('TEMPLATE_DIR')
 PDF_DIR: str | None = os.environ.get('PDF_DIR')
 
