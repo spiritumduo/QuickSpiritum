@@ -31,26 +31,23 @@ class CreatePDF():
     def __init__(self, template_dir: str | None, output_path: str | None) -> None:
         if template_dir == None:
             raise ValueError(f'No template directory stored in environmental file .env')
-            return None
 
         if not os.path.isdir(template_dir):
             raise ValueError(f'Template directory "{ template_dir }" does not exist!')
-            return None
         
         if output_path == None:
             raise ValueError(f'No output path stored in environmental file .env')
-            return None
         
         #No need to check if output_path exists, as it will be created in self.create()
         
-        #self.template_dir: str = str(template_dir)
-        #self.output_path: str = str(output_path)
-        self.template_dir: str = '/requests/templates/'
-        self.output_path: str = '/archive/'
+        self.template_dir: str = str(template_dir)
+        self.output_path: str = str(output_path)
+        #self.template_dir: str = '/requests/templates/'
+        #self.output_path: str = '/archive/'
         return None
     
 
-    def get_locations(self) -> list | None:
+    def get_locations(self) -> list:
         """ Get the 'locations' (physical or virtual) for a collection of different clinical requests
 
         """
@@ -63,36 +60,39 @@ class CreatePDF():
         if not locations:
             raise RuntimeError(f'No locations folders found in "{ self.template_dir }" \
                                template directory')
-            return None
 
         return locations
     
+
+    def check_template(self) -> bool:
+        print("Need to write code to check all placeholders in a template are valid")
+        return True
+
 
     #TODO: Perhaps can use docx_get_keys() instead to get keys (maybe will use python-docs-tempate)
     def get_types(self, location: str) -> list[str]:
         """ Get the types of tests available for a location
         
         """
-        types: list[str] = []
-        types_path = f'{self.template_dir}{location}/'
+        requests: list[str] = []
+        requests_path = f'{self.template_dir}{location}/'
 
-        #TODO: #2 need to check locations folder exists
+        if not os.path.isdir(requests_path):
+            raise RuntimeError(f'"{requests_path}" is not a valid location directory!')
 
-        if not os.path.isdir(types_path):
-            raise Exception(f'"{types_path}" is not a valid directory!')
-            return None
-
-
-        types = [f for f in os.listdir(types_path) 
-                 if os.path.isfile(f'{types_path}{f}') 
+        requests = [f for f in os.listdir(requests_path) 
+                 if os.path.isfile(f'{requests_path}{f}') 
                  and f.endswith(".docx") 
                  and not f.startswith('~')]
         
-        types = [x.removesuffix('.docx') for x in types]
+        requests = [x.removesuffix('.docx') for x in requests]
 
-        return types
+        if not requests:
+            raise RuntimeError(f'No request requests found in "{ location }" folder')
+            
+        return requests
     
-    #TODO: will need return hint type
+
     def get_placeholders(self, location: str, requests: list[str]) -> list[list[str]]:
         """ Gets placeholders and remove any duplicates as they appear
             
@@ -102,14 +102,28 @@ class CreatePDF():
             returns:
                 list[str]
         """
+
         #TODO: #4 might want to make this a dictionary of lists (for easier searching)
         placeholders_final: list[list[str]] = []
         raw_placeholders: list[str] = []
         cleaned_placeholder: str = ''
+
+        types_path = f'{self.template_dir}{location}/'
+        template_path: str = ''
+
+        if not os.path.isdir(types_path):
+            raise RuntimeError(f'"{ types_path }" is not a valid location directory!')
+        
+        if not requests:
+            raise RuntimeError(f'No requests have been specified')
         
         for request in requests:
-            doc = docx2txt.process(f'{ self.template_dir }{ location }/{ request }.docx')
-            #TODO: need to check if above file exists!
+            template_path = f'{ types_path }{ request }.docx'
+            if not os.path.exists(template_path):
+                raise RuntimeError(f'Template docx file "{ template_path }" does not exist!')
+
+        for request in requests:
+            doc = docx2txt.process(f'{ types_path }{ request }.docx')
             doc_Regex = re.compile(r'\$\{.*?\}')
             raw_placeholders = doc_Regex.findall(doc)
 
@@ -139,89 +153,104 @@ class CreatePDF():
             subList.append(s.strip())
         
         placeholders_final.append(list(subList))
-        return None
 
+        return None
+        
 
     #TODO: could rewrite this to use the python-docx-template library
-    def create(self, location: str, type: str, variables, demographics: str, signature_path) -> None | str:
+    #TODO: take a list of requests to process
+    def create(self, location: str, request: str, placeholders: list[list[str]], demographics: str, signature_path: str) -> str:
         """ Actually create the PDF
         
         """
 
-        template_path: str = f'{ self.template_dir }{ location }/{ type }.docx'
+        requests_path: str = f'{self.template_dir}{location}/'
+        template_path: str = f'{ requests_path }{ request }.docx'
         temp_docx_dir: str = f'{ self.output_path }{ location }/temp/'
-        temp_docx_path: str = f'{ temp_docx_dir }{ type }_{ demographics }_'
+        temp_docx_path: str = f'{ temp_docx_dir }{ request }_{ demographics }_'
         n: int = 1
+        # Need 'pdf_dir' for libreOffice arguments.
         pdf_dir: str = ''
         pdf_path: str = ''
-        variables_dict: dict[str,str] = {}
-        locations: list[str] | None = []
-        #TODO: libreoffice_output: type[pexpect]
+        placeholders_dict: dict[str,str] = {}
+        
+        #TODO: hint type libreoffice_output: type[pexpect]
 
-        locations = self.get_locations()
-
-        if not location in locations:
-            raise Exception('Location does not exist!')
-            return None
+        if not os.path.isdir(requests_path):
+            raise RuntimeError(f'"{ requests_path }" is not a valid location directory!')
+        
+        #TODO: need this to use a list
+        if not request:
+            #raise RuntimeError(f'No requests have been specified')
+            raise RuntimeError(f'No request has been specified')
 
         if not os.path.exists(template_path):
-            raise Exception(f'Template docx file "{ template_path }" does not exist!')
-            return None
+            raise RuntimeError(f'Template docx file "{ template_path }" does not exist!')
         
-        if any(illegal in demographics for illegal in "\\/"):
-            raise Exception(f'Illegal character in demographics - "{ demographics }"')
-            return None
+        if not placeholders:
+            raise RuntimeError(f'No placeholders provided')
+
+        if any(illegal in demographics for illegal in '<>?:"/\\|?*,'):
+            raise RuntimeError(f'Illegal character in demographics - "{ demographics }"')
+        
+        #TODO: may need to remove or rethink this check once pictures are included in placeholders
+        if not os.path.exists(signature_path):
+            raise RuntimeError(f'Image filename "{ signature_path }" does not exist')
 
         # Make directory with sub-folders if needed
         if not os.path.isdir(temp_docx_dir):
             Path(temp_docx_dir).mkdir(parents=True, exist_ok=True)
 
+        pdf_dir = f'{ self.output_path }{ location }'
+        pdf_path = f'{ pdf_dir }/{ request }_{ demographics }_'
+
         while n < 10000:
-            if os.path.exists(f'{ self.output_path }{ location }/{ type }_{ demographics }_{ n }.pdf'):
+            if os.path.exists(f'{ pdf_path }{ n }.pdf'):
                 n = n + 1
             else:
                 break
 
         if n >= 10000:
-            raise Exception('Filename increment over ran!')
-            return None
+            raise RuntimeError('Filename increment over ran!')
+            
         
-        temp_docx_path =f'{ temp_docx_path }{ n }.docx'
-        pdf_dir = f'{ self.output_path }{ location }'
-        pdf_path = f'{ self.output_path }{ location }/{ type }_{ demographics }_{ n }.pdf'
+        temp_docx_path = f'{ temp_docx_path }{ n }.docx'
+        pdf_path = f'{ pdf_path }{ n }.pdf'
 
-        for x in range(len(variables)):
-            variables_dict[variables[x][0]] = variables[x][1]
+        for x in range(len(placeholders)):
+            placeholders_dict[placeholders[x][0]] = placeholders[x][1]
 
         try:
             doc = Document(template_path)
-            docx_replace(doc, **variables_dict)
+            docx_replace(doc, **placeholders_dict)
             doc.save(temp_docx_path)
         except:
             raise Exception(f'Could not create the .docx file "{ temp_docx_path }"!')
-            return None
+            
         
         # Double check that the file has been created
         if not os.path.isfile(temp_docx_path):
             raise Exception(f'Error - file {temp_docx_path}" has not been created!')
-            return None
         
-        self.addPicture(temp_docx_path, signature_path)
+        #TODO: need to have picture adding in placeholders returned (placeholders)
+        self.add_picture(temp_docx_path, signature_path)
 
-        libreoffice_output = pexpect.spawn(f'libreoffice --headless --convert-to pdf "{ temp_docx_path }" --outdir "{ pdf_dir }"')
+        libreoffice_output = pexpect.spawn(
+            f'libreoffice --headless --convert-to pdf "{ temp_docx_path }" --outdir "{ pdf_dir }"')
         
         #TODO: print(type(libreoffice_output))
 
         if libreoffice_output.read()[0:7] != b'convert':
             raise Exception(f'Error with PDF creation via LibreOffice')
-            return None
+            
+        os.remove(temp_docx_path)
 
-        #os.remove(temp_docx_path)
-
+        #TODO: will need to output a list
         return pdf_path
     
-
-    def addPicture(self, file: str, image: str, placeholder: str = "signature", 
+    
+    #TODO: May remove this function later
+    def add_picture(self, file: str, image: str, placeholder: str = "signature", 
                    width = Mm(20)) -> None:
         """ For adding pictures to docx. May be able to join this with 'create'
             by using the python-docx-template module
@@ -232,10 +261,10 @@ class CreatePDF():
 
         if not os.path.exists(file):
             raise Exception(f'Docx filename "{ file }" does not exist')
-            return None
+            
         if not os.path.exists(image):
             raise Exception(f'Image filename "{ image }" does not exist')
-            return None
+            
 
         doc = DocxTemplate(file)
         context = {placeholder: InlineImage(doc, image, width = width)}
@@ -258,22 +287,22 @@ if __name__ == '__main__':
     
     # Get variables from
     #requests = ['Bronchoscopy 1', 'Bronchoscopy 2', 'Bronchoscopy 3']
-    #variables = docxPtr.get_placeholders('Salisbury', ['Lung function test'])
+    variables = docxPtr.get_placeholders('Salisbury', ['Lung function test'])
     #print(variables)
 
     # These might not work any more as Lists instead of Dic are bring used.
 
-    """variables[0][1] = '123456'
+    variables[0][1] = '123456'
     variables[2][1] = 'John'
     variables[3][1] = 'Smith'
     variables[5][1] = C.UNCHECKED
-    variables[6][1] = C.CHECKED"""
+    variables[6][1] = C.CHECKED
 
     """print('Placeholders for Lung function tests at Salisbury are:')
     for v in variables:
         print(v)
     """
-    #pdf_path = docxPtr.create('Salisbury', 'Lung function test', variables, "Smith, John, 1234567")
+    pdf_path = docxPtr.create('Salisbury', 'Lung function test', variables, "Smith, John, 1234567", '/requests/signatures/Mark Bailey.jpeg')
     #print(pdf_path)
 
-    #docxPtr.addPicture('/requests/testing/Lung function test.docx', '/requests/signatures/Mark Bailey.jpeg')
+    #docxPtr.add_picture('/requests/testing/Lung function test.docx', '/requests/signatures/Mark Bailey.jpeg')

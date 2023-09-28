@@ -152,13 +152,12 @@ def clinicalRequestSubmit():
             elif item[2].lower() == "last name":
                 lastname = item[1]
         
-        demographicsForPDF = f'{ lastname }, { firstname }, { hospitalID }'
+        demographicsForPDF = f'{ lastname }_{ firstname }_{ hospitalID }'
 
         docxPtr = CreatePDF(C.TEMPLATE_DIR, C.PDF_DIR)
 
         for r in session['requestsChecked']:
             PDFPath = docxPtr.create(lastSelectedLocation, r, placeHoldersUpdated, demographicsForPDF, '/requests/signatures/Mark Bailey.jpeg')
-            print(PDFPath)
 
         return render_template('clinicalRequestSubmitted.html', 
                                 locationOptionsHTML=locationOptionsHTML,
