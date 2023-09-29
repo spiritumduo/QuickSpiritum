@@ -1,3 +1,6 @@
+"""
+    Prints out the request types in the test templates folder
+"""
 
 import sys
 import os
@@ -7,19 +10,15 @@ from create_pdf import CreatePDF
 test_template_dir: str = '/requests/tests/test_templates/'
 test_pdf_dir: str = '/requests/examples'
 
-print("Running...")
+placeholders: list[list[str]] = []
 
 docxPtr = CreatePDF(test_template_dir, test_pdf_dir)
-# Get the different locations
-print(f'Locations: { docxPtr.get_locations() }')
 
-# Get the types of requests in a the Salisbury trust
-#print(f'Available requests in Salisbury: { docxPtr.get_types("Salisbury") }')
+requests = ['test_template_1', 'test_template_2_errors']
+placeholders = docxPtr.get_placeholders('location_1', requests)
 
-# Get variables from
-#requests = ['Bronchoscopy 1', 'Bronchoscopy 2', 'Bronchoscopy 3']
-#variables = docxPtr.get_placeholders('Salisbury', ['Lung function test'])
-#print(variables)
+for ph in placeholders:
+    print(ph[2])
 
 # These might not work any more as Lists instead of Dic are bring used.
 
