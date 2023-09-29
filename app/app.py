@@ -156,8 +156,10 @@ def clinicalRequestSubmit():
 
         docxPtr = CreatePDF(C.TEMPLATE_DIR, C.PDF_DIR)
 
+        placeHoldersUpdated['signature|picture'] = '/requests/signatures/Mark Bailey.jpeg'
+        
         for r in session['requestsChecked']:
-            PDFPath = docxPtr.create(lastSelectedLocation, r, placeHoldersUpdated, demographicsForPDF, '/requests/signatures/Mark Bailey.jpeg')
+            PDFPath = docxPtr.create(lastSelectedLocation, r, placeHoldersUpdated, demographicsForPDF)
 
         return render_template('clinicalRequestSubmitted.html', 
                                 locationOptionsHTML=locationOptionsHTML,

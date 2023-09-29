@@ -7,13 +7,13 @@
 import os
 from pathlib import Path
 from docx import Document
-from python_docx_replace import docx_replace
+from python_docx_replace import docx_replace, docx_get_keys
 import pexpect
 import re
 import docx2txt
 import constants as C
+from fnmatch import fnmatch
 
-#TODO: try and move these to the contants module
 
 #TODO: check env variables are available
 
@@ -47,6 +47,71 @@ class CreatePDF():
         return None
     
 
+    def check_template(self, search_location:str = '/requests/templates/', 
+                       verbose: bool = True) -> dict[str, str]:
+        """ Check that a single or folder worth of templates are correctly formatted for 
+            useing placeholders
+
+        """
+
+        files_to_check: dict = {}
+        doc: str = ''
+        #TODO: doc_Regex initialise and hint type
+        left_stake: list = []
+        right_stake: list = []
+        request: list[str] = []
+        location: str = ''
+        placeholders: list[list[str]] = []
+        path_split: str = ''
+        config_found: bool = False
+
+        if os.path.isdir(search_location):
+            for path, subdirs, files in os.walk(search_location):
+                for name in files:
+                    if fnmatch(name, '*.docx') and not name.startswith('~'):
+                        files_to_check[os.path.join(path, name)] = ''
+        elif os.path.isfile(search_location):
+            files_to_check[search_location] = ''
+        else:
+            raise RuntimeError(f'Search location "{ search_location }" is neither a valid \
+directory or location')
+
+        for file in files_to_check:
+            if len(request):
+                request.pop()
+            config_found = False
+
+            doc = docx2txt.process(file)
+            doc_Regex = re.compile(r'\$\{')
+            left_stake = doc_Regex.findall(doc)
+            doc_Regex = re.compile(r'\}')
+            right_stake = doc_Regex.findall(doc)
+
+            if len(left_stake) == len(right_stake):
+                files_to_check[file] = '.'
+            else:
+                files_to_check[file] = 'F'
+
+            path_split = file.split('/')
+            request.append(path_split[-1].replace('.docx', ''))
+            location = path_split[-2]
+            placeholders = self.get_placeholders(location, request)
+
+            for ph in placeholders:
+                if ph[2] == 'configuration':
+                    config_found = True
+            
+            if config_found:
+                files_to_check[file] += '.'
+            else:
+                files_to_check[file] += 'W'
+
+        if verbose:
+            print(files_to_check)
+
+        return files_to_check
+    
+
     def get_locations(self) -> list:
         """ Get the 'locations' (physical or virtual) for a collection of different clinical requests
 
@@ -62,11 +127,6 @@ class CreatePDF():
                                template directory')
 
         return locations
-    
-
-    def check_template(self) -> bool:
-        print("Need to write code to check all placeholders in a template are valid")
-        return True
 
 
     #TODO: Perhaps can use docx_get_keys() instead to get keys (maybe will use python-docs-tempate)
@@ -159,7 +219,7 @@ class CreatePDF():
 
     #TODO: could rewrite this to use the python-docx-template library
     #TODO: take a list of requests to process
-    def create(self, location: str, request: str, placeholders: list[list[str]], demographics: str, signature_path: str) -> str:
+    def create(self, location: str, request: str, placeholders: list[list[str]], demographics: str) -> str:
         """ Actually create the PDF
         
         """
@@ -173,6 +233,7 @@ class CreatePDF():
         pdf_dir: str = ''
         pdf_path: str = ''
         placeholders_dict: dict[str,str] = {}
+        placeholder_temp: str = ''
         
         #TODO: hint type libreoffice_output: type[pexpect]
 
@@ -193,9 +254,11 @@ class CreatePDF():
         if any(illegal in demographics for illegal in '<>?:"/\\|?*,'):
             raise RuntimeError(f'Illegal character in demographics - "{ demographics }"')
         
-        #TODO: may need to remove or rethink this check once pictures are included in placeholders
-        if not os.path.exists(signature_path):
-            raise RuntimeError(f'Image filename "{ signature_path }" does not exist')
+        for x in range(len(placeholders)):
+            if len(placeholders[x]) >= 4:
+                if placeholders[x][3] == 'picture':
+                    if not os.path.exists(placeholders[x][1]):
+                        raise RuntimeError(f'Image filename "{ placeholders[x][1] }" does not exist')
 
         # Make directory with sub-folders if needed
         if not os.path.isdir(temp_docx_dir):
@@ -218,7 +281,14 @@ class CreatePDF():
         pdf_path = f'{ pdf_path }{ n }.pdf'
 
         for x in range(len(placeholders)):
-            placeholders_dict[placeholders[x][0]] = placeholders[x][1]
+            placeholder_temp = placeholders[x][1]
+
+            if len(placeholders[x]) >= 4:
+                if placeholders[x][3] == 'picture':
+                    placeholder_temp = f'{{{{ { placeholders[x][2] } }}}}'
+            
+            placeholders_dict[placeholders[x][0]] = placeholder_temp
+
 
         try:
             doc = Document(template_path)
@@ -233,7 +303,11 @@ class CreatePDF():
             raise Exception(f'Error - file {temp_docx_path}" has not been created!')
         
         #TODO: need to have picture adding in placeholders returned (placeholders)
-        self.add_picture(temp_docx_path, signature_path)
+        
+        for x in range(len(placeholders)):
+            if len(placeholders[x]) >= 4:
+                if placeholders[x][3] == 'picture':
+                    self.add_picture(temp_docx_path, placeholders[x][1], placeholders[x][2])
 
         libreoffice_output = pexpect.spawn(
             f'libreoffice --headless --convert-to pdf "{ temp_docx_path }" --outdir "{ pdf_dir }"')
@@ -243,12 +317,12 @@ class CreatePDF():
         if libreoffice_output.read()[0:7] != b'convert':
             raise Exception(f'Error with PDF creation via LibreOffice')
             
-        os.remove(temp_docx_path)
+        #os.remove(temp_docx_path)
 
         #TODO: will need to output a list
         return pdf_path
     
-    
+
     #TODO: May remove this function later
     def add_picture(self, file: str, image: str, placeholder: str = "signature", 
                    width = Mm(20)) -> None:
@@ -302,7 +376,7 @@ if __name__ == '__main__':
     for v in variables:
         print(v)
     """
-    pdf_path = docxPtr.create('Salisbury', 'Lung function test', variables, "Smith, John, 1234567", '/requests/signatures/Mark Bailey.jpeg')
+    pdf_path = docxPtr.create('Salisbury', 'Lung function test', variables, "Smith_John_1234567", '/requests/signatures/Mark Bailey.jpeg')
     #print(pdf_path)
 
     #docxPtr.add_picture('/requests/testing/Lung function test.docx', '/requests/signatures/Mark Bailey.jpeg')

@@ -8,9 +8,9 @@ from diff_pdf_visually import pdf_similar
 test_template_dir: str = '/requests/tests/test_templates/'
 test_template_dir_no_locations: str = '/requests/tests/test_templates_no_locations/'
 test_pdf_dir: str = '/requests/tests/test_pdfs/'
-test_signature_file: str = '/requests/tests/test_signatures/Picasso.png'
-test_pdf_output_path: str = '/requests/tests/test_pdfs/location_1/test_template_1_Doe_John_12345_1.pdf'
-comparison_pdf_path: str = '/requests/tests/compare_pdfs/location_1/test_template_1_Doe_John_12345_1.pdf'
+test_signature_file: str = '/requests/tests/test_signatures/Peter_Smith.jpg'
+test_pdf_output_path: str = '/requests/tests/test_pdfs/location_1/test_template_1_Picasso_Pablo_12345_1.pdf'
+comparison_pdf_path: str = '/requests/tests/compare_pdfs/location_1/test_template_1_Picasso_Pablo_12345_1.pdf'
 
 expected_placeholders_return: list[list[str]] = [['Hospital address', '', 'Hospital address'], 
         ['GP name', '', 'GP name'], ['GP address', '', 'GP address'], 
@@ -21,25 +21,29 @@ expected_placeholders_return: list[list[str]] = [['Hospital address', '', 'Hospi
         ['Main diagnoses', '', 'Main diagnoses'], 
         ['Plan', '', 'Plan'], 
         ['Medications', '', 'Medications'], 
-        ['Main body', '', 'Main body'], 
+        ['Main body', '', 'Main body'],
+        ['signature|picture', '', 'signature', 'picture'],
         ['Your name', '', 'Your name'], 
         ['Your postnominals', '', 'Your postnominals'], 
-        ['Your position', '', 'Your position']]
+        ['Your position', '', 'Your position'],
+        ['configuration | emailTo:mark.bailey5@nhs.net', '', 'configuration', 'emailTo:mark.bailey5@nhs.net']]
 
 test_placeholders: list[list[str]] = [['Hospital address', 'Hospital Road', 'Hospital address'], 
         ['GP name', 'Dr Bob', 'GP name'], ['GP address', '', 'GP address'], 
-        ['now', '--/--/--', 'now'], 
-        ['First name', 'John', 'First name'], 
-        ['Last name', 'Doe', 'Last name'], 
+        ['now', '02/02/1945', 'now'], 
+        ['First name', 'Pablo', 'First name'], 
+        ['Last name', 'Picasso', 'Last name'], 
         ['Hospital ID|integer', '12345', 'Hospital ID', 'integer'], 
-        ['Date of birth|date', '01/01/1990', 'Date of birth', 'date'], 
+        ['Date of birth|date', '25/10/1881', 'Date of birth', 'date'], 
         ['Main diagnoses', 'Head Flu', 'Main diagnoses'], 
         ['Plan', 'Time', 'Plan'], 
         ['Medications', 'Nil', 'Medications'], 
-        ['Main body', 'John had a cold. He is already feeling better', 'Main body'], 
-        ['Your name', 'Dr Goodyear', 'Your name'], 
+        ['Main body', 'Pablo had a cold. He is already feeling better', 'Main body'], 
+        ['signature|picture', test_signature_file, 'signature', 'picture'],
+        ['Your name', 'Dr Peter Smith', 'Your name'], 
         ['Your postnominals', 'MB', 'Your postnominals'], 
-        ['Your position', 'Consultant', 'Your position']]
+        ['Your position', 'Consultant', 'Your position'],
+        ['configuration | emailTo:mark.bailey5@nhs.net', '']]
 class TestCreatePDF(unittest.TestCase):
 
     def test_init(self):
@@ -90,14 +94,28 @@ class TestCreatePDF(unittest.TestCase):
 
     def test_check_template(self):
         """
-            Check that this works
+            Check the templates checker runs without issue
         """
-        template_pass_state: bool = False
+
+        template_pass_state: list[str] = []
 
         docxPtr = CreatePDF(test_template_dir, test_pdf_dir)
-        template_pass_state = docxPtr.check_template()
+        template_pass_state = docxPtr.check_template(test_template_dir)
 
-        self.assertTrue(template_pass_state)
+        self.assertEqual(template_pass_state,
+                         {'/requests/tests/test_templates/location_1/test_template_2_errors.docx': 'FW', 
+                          '/requests/tests/test_templates/location_1/test_template_1.docx': '..'})
+
+
+    def test_check_template_bad_search_location(self):
+        """
+            Check the templates checker runs without issue
+        """
+
+        docxPtr = CreatePDF(test_template_dir, test_pdf_dir)
+
+        with self.assertRaises(RuntimeError):
+            docxPtr.check_template('bad location')
 
 
     def test_get_types(self):
@@ -107,7 +125,7 @@ class TestCreatePDF(unittest.TestCase):
 
         docxPtr = CreatePDF(test_template_dir, test_pdf_dir)
         types = docxPtr.get_types('location_1')
-        self.assertEqual(types, ['test_template_1'])
+        self.assertEqual(sorted(types), ['test_template_1', 'test_template_2_errors'])
 
 
     def test_get_types_no_types(self):
@@ -220,13 +238,13 @@ class TestCreatePDF(unittest.TestCase):
 
         docxPtr = CreatePDF(test_template_dir, test_pdf_dir)
         function_return = docxPtr.create('location_1', 'test_template_1', 
-                        test_placeholders, 'Doe_John_12345', test_signature_file)
+                        test_placeholders, 'Picasso_Pablo_12345')
 
         self.assertEqual(function_return, test_pdf_output_path)
         self.assertEqual(test_placeholders, old_placeholders)
         self.assertTrue(pdf_similar(test_pdf_output_path, comparison_pdf_path))
 
-        os.remove(function_return)
+        #os.remove(function_return)
 
 
     def test_create_bad_location(self):
@@ -238,7 +256,7 @@ class TestCreatePDF(unittest.TestCase):
         
         with self.assertRaises(RuntimeError):
             docxPtr.create('location_3', 'test_template_1', test_placeholders, 
-                           'Doe_John_12345', test_signature_file)
+                           'Picasso_Pablo_12345')
             
          
     def test_create_bad_template(self):
@@ -250,7 +268,7 @@ class TestCreatePDF(unittest.TestCase):
         
         with self.assertRaises(RuntimeError):
             docxPtr.create('location_1', 'test_template_2', test_placeholders, 
-                           'Doe_John_12345', test_signature_file)
+                           'Picasso_Pablo_12345')
             
     
     def test_create_no_placeholders_provided(self):
@@ -262,7 +280,7 @@ class TestCreatePDF(unittest.TestCase):
         
         with self.assertRaises(RuntimeError):
             docxPtr.create('location_1', 'test_template_1', [], 
-                           'Doe_John_12345', test_signature_file)
+                           'Picasso_Pablo_12345')
     
 
     def test_create_bad_demographics(self):
@@ -277,20 +295,7 @@ class TestCreatePDF(unittest.TestCase):
         for c in reserved_filename_characters:
             with self.assertRaises(RuntimeError):
                 docxPtr.create('location_1', 'test_template_1', test_placeholders, 
-                            f'Doe_John_12345{ c }', test_signature_file)
-
-
-    def test_create_bad_signature_path(self):
-        """
-            Check that fails if bad signature filename given
-        """
-        
-        docxPtr = CreatePDF(test_template_dir, test_pdf_dir)
-        
-        with self.assertRaises(RuntimeError):
- 
-            docxPtr.create('location_1', 'test_template_1', test_placeholders, 
-                           'Doe_John_12345', 'bad_path')
+                            f'Picasso_Pablo_12345{ c }')
     
 
     def test_add_picture(self):
