@@ -8,6 +8,7 @@ __pycache__/
 logs/
 requests/archive/
 requests/signatures/
+archive/
 
 # C extensions
 *.so
