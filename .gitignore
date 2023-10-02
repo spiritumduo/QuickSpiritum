@@ -4,11 +4,19 @@ __pycache__/
 *$py.class
 
 # Extra
+<<<<<<< HEAD
+~$*
+.DS_Store
+logs/
+archive/
+requests/signatures/
+=======
 .DS_Store
 logs/
 requests/archive/
 requests/signatures/
 archive/
+>>>>>>> main
 
 # C extensions
 *.so

@@ -8,3 +8,6 @@ mypy-extensions
 pexpect
 python-docx
 python-docx-replace
+pytest
+PyPDF2
+diff-pdf-visually

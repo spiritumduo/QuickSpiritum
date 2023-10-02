@@ -31,8 +31,9 @@ services:
       - "1111:1111"
     volumes:
       - ./app:/app
-      - ./requests:/requests
+      - ./archive:/archive
       - ./logs:/logs
+      - ./requests:/requests
     working_dir: /app
     env_file: .env
     entrypoint: bash PID_1.sh
