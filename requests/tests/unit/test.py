@@ -12,10 +12,18 @@ test_signature_file: str = '/requests/tests/test_signatures/Picasso.png'
 test_pdf_output_path: str = '/requests/tests/test_pdfs/location_1/test_template_1_Doe,John,12345_1.pdf'
 comparison_pdf_path: str = '/requests/tests/compare_pdfs/location_1/test_template_1_Doe,John,12345_1.pdf'
 
+if True:
+    print(f'Hello, how are you today. ' \
+          f'I am fine thanks.')
+    
+    raise RuntimeError(
+            f'Image filename "{ test_pdf_output_path }" '
+            f'does not exist'
+            )
 
-docxPtr = CreatePDF('/requests/templates/', test_pdf_dir)
+"""docxPtr = CreatePDF('/requests/templates/', test_pdf_dir)
 
-docxPtr.check_template()
+docxPtr.check_template()"""
 
 #docxPtr.check_template('/requests/templates/Salisbury/Lung function test.docx')
 

@@ -11,7 +11,8 @@ template_dir: str = '/requests/tests/test_templates/'
 pdf_dir: str = '/requests/examples/'
 test_signature_file: str = '/requests/tests/test_signatures/Peter_Smith.jpg'
 
-placeholders: list[list[str]] = [['Hospital address', 'Hospital Road', 'Hospital address'], 
+placeholders: list[list[str]] = [
+        ['Hospital address', 'Hospital Road', 'Hospital address'], 
         ['GP name', 'Dr Bob', 'GP name'], ['GP address', '', 'GP address'], 
         ['now', '02/02/1945', 'now'], 
         ['First name', 'Pablo', 'First name'], 
@@ -26,7 +27,8 @@ placeholders: list[list[str]] = [['Hospital address', 'Hospital Road', 'Hospital
         ['Your name', 'Dr Peter Smith', 'Your name'], 
         ['Your postnominals', 'MB', 'Your postnominals'], 
         ['Your position', 'Consultant', 'Your position'],
-        ['configuration | emailTo:mark.bailey5@nhs.net', '']]
+        ['configuration | emailTo:mark.bailey5@nhs.net', '']
+        ]
 
 docxPtr = CreatePDF(template_dir, pdf_dir)
 
