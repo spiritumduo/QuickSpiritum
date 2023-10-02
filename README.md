@@ -51,3 +51,4 @@ I would appreciate help from anyone that has automated the sending of emails via
 
 Also, if anyone wants to use, or get involved with the build of QS 2.0, it could be an interesting collaboration.
 
+.
