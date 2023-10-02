@@ -27,15 +27,23 @@ class CreatePDF:
 
     """
 
-    def __init__(self, template_dir: str | None, output_path: str | None) -> None:
+    def __init__(
+        self, template_dir: str | None, output_path: str | None
+    ) -> None:
         if template_dir == None:
-            raise ValueError(f"No template directory stored in environmental file .env")
+            raise ValueError(
+                f"No template directory stored in environmental file .env"
+            )
 
         if not os.path.isdir(template_dir):
-            raise ValueError(f'Template directory "{ template_dir }" does not exist!')
+            raise ValueError(
+                f'Template directory "{ template_dir }" does not exist!'
+            )
 
         if output_path == None:
-            raise ValueError(f"No output path stored in environmental file .env")
+            raise ValueError(
+                f"No output path stored in environmental file .env"
+            )
 
         # No need to check if output_path exists, as it will be created
         # in self.create()
@@ -47,7 +55,9 @@ class CreatePDF:
         return None
 
     def check_template(
-        self, search_location: str = "/requests/templates/", verbose: bool = True
+        self,
+        search_location: str = "/requests/templates/",
+        verbose: bool = True,
     ) -> dict[str, str]:
         """Check that a single or folder worth of templates are correctly
         formatted for using placeholders
@@ -144,7 +154,9 @@ class CreatePDF:
         requests_path = f"{self.template_dir}{location}/"
 
         if not os.path.isdir(requests_path):
-            raise RuntimeError(f'"{requests_path}" is not a valid location directory!')
+            raise RuntimeError(
+                f'"{requests_path}" is not a valid location directory!'
+            )
 
         requests = [
             f
@@ -157,11 +169,15 @@ class CreatePDF:
         requests = [x.removesuffix(".docx") for x in requests]
 
         if not requests:
-            raise RuntimeError(f'No request requests found in "{ location }" folder')
+            raise RuntimeError(
+                f'No request requests found in "{ location }" folder'
+            )
 
         return requests
 
-    def get_placeholders(self, location: str, requests: list[str]) -> list[list[str]]:
+    def get_placeholders(
+        self, location: str, requests: list[str]
+    ) -> list[list[str]]:
         """Gets placeholders and remove any duplicates as they appear
 
             Args:
@@ -181,7 +197,9 @@ class CreatePDF:
         template_path: str = ""
 
         if not os.path.isdir(types_path):
-            raise RuntimeError(f'"{ types_path }" is not a valid location directory!')
+            raise RuntimeError(
+                f'"{ types_path }" is not a valid location directory!'
+            )
 
         if not requests:
             raise RuntimeError(f"No requests have been specified")
@@ -202,9 +220,15 @@ class CreatePDF:
                 cleaned_placeholder = re.sub("[${}]", "", raw_placeholder)
 
                 if not placeholders_final:  # Empty list
-                    self.sub_list_extract(placeholders_final, cleaned_placeholder)
-                elif not any(cleaned_placeholder in ph for ph in placeholders_final):
-                    self.sub_list_extract(placeholders_final, cleaned_placeholder)
+                    self.sub_list_extract(
+                        placeholders_final, cleaned_placeholder
+                    )
+                elif not any(
+                    cleaned_placeholder in ph for ph in placeholders_final
+                ):
+                    self.sub_list_extract(
+                        placeholders_final, cleaned_placeholder
+                    )
 
         return placeholders_final
 
@@ -240,7 +264,9 @@ class CreatePDF:
         requests_path: str = f"{self.template_dir}{location}/"
         template_path: str = f"{ requests_path }{ request }.docx"
         temp_docx_dir: str = f"{ self.output_path }{ location }/temp/"
-        temp_docx_path: str = f"{ temp_docx_dir }{ request }_" f"{ demographics }_"
+        temp_docx_path: str = (
+            f"{ temp_docx_dir }{ request }_" f"{ demographics }_"
+        )
 
         n: int = 1
         # Need 'pdf_dir' for libreOffice arguments.
@@ -277,9 +303,10 @@ class CreatePDF:
         for x in range(len(placeholders)):
             if len(placeholders[x]) >= 4:
                 if placeholders[x][3] == "picture":
+                    print(placeholders[x])
                     if not os.path.exists(placeholders[x][1]):
                         raise RuntimeError(
-                            f'Image filename "{ placeholders[x][1] }"' f"does not exist"
+                            f'Image filename "{ placeholders[x][1] }" does not exist'
                         )
 
         # Make directory with sub-folders if needed
@@ -315,11 +342,15 @@ class CreatePDF:
             docx_replace(doc, **placeholders_dict)
             doc.save(temp_docx_path)
         except:
-            raise Exception(f'Could not create the .docx file "{ temp_docx_path }"!')
+            raise Exception(
+                f'Could not create the .docx file "{ temp_docx_path }"!'
+            )
 
         # Double check that the file has been created
         if not os.path.isfile(temp_docx_path):
-            raise Exception(f'Error - file {temp_docx_path}" has not been created!')
+            raise Exception(
+                f'Error - file {temp_docx_path}" has not been created!'
+            )
 
         # TODO: need to have picture adding in placeholders returned
         # (placeholders)
@@ -348,7 +379,11 @@ class CreatePDF:
 
     # TODO: May remove this function later
     def add_picture(
-        self, file: str, image: str, placeholder: str = "signature", width=Mm(20)
+        self,
+        file: str,
+        image: str,
+        placeholder: str = "signature",
+        width=Mm(20),
     ) -> None:
         """For adding pictures to docx. May be able to join this with
         'create'by using the python-docx-template module
